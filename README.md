@@ -1,4 +1,4 @@
-# ATENEA-Administration-BackEnd
+# ATENEA_Administration_BackEnd
 
 **Integrantes:**
 
