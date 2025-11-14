@@ -216,9 +216,31 @@ Implementa los **detalles técnicos**: controladores REST, persistencia, configu
 
 ## Diagramas del Módulo
 
-### Diagrama de Componentes Específico
+
+### Diagrama de Despliegue 
+
+![DiagramaDespliegue](docs/uml/DiagramaDespliegue.png)
+
+
+---
+
+### Diagrama de ComponentesGeneral
+
+![alt text](docs/uml/DiagramaComponentesGeneral.png)
+
+
+---
+
+### Diagrama de Componentes Específico 
 
 ![alt text](docs/uml/DiagramaComponentesEspecifico.png)
+
+---
+
+
+## Diagrama de Casos de Uso
+
+![alt text](docs/uml/DiagramaCasosUso.png)
 
 ---
 
@@ -234,8 +256,10 @@ Implementa los **detalles técnicos**: controladores REST, persistencia, configu
 
 ---
 
-### Diagrama de Despliegue Específico del Módulo
 
-![DiagramaDespliegue](docs/uml/DiagramaDespliegue.png)
+## Diagrama de Contexto
+
+![alt text](docs/uml/DiagramaContexto.png)
+
 
 ---
