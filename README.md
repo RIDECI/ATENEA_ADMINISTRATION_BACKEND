@@ -224,7 +224,7 @@ Implementa los **detalles técnicos**: controladores REST, persistencia, configu
 
 ---
 
-### Diagrama de ComponentesGeneral
+### Diagrama de Componentes General
 
 ![alt text](docs/uml/DiagramaComponentesGeneral.png)
 
