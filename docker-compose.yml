@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=local
+      - MONGODB_URI=mongodb+srv://atenea_admin:bfHeCfbG8bvojVwo@fintech.lovfhfs.mongodb.net/atenea_db?retryWrites=true&w=majority&appName=Fintech
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
