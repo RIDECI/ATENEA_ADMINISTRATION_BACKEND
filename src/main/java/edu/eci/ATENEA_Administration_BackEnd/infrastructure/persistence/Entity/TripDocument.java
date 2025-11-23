@@ -1,23 +1,28 @@
-package edu.eci.ATENEA_Administration_BackEnd.domain.model;
+package edu.eci.ATENEA_Administration_BackEnd.infrastructure.persistence.Entity;
 
 import edu.eci.ATENEA_Administration_BackEnd.domain.model.Enum.TripStatus;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
-
 /**
- * Modelo de dominio para monitoreo de viajes en RideECI
+ * Documento de viaje para persistencia en MongoDB
  *
  * @author RideECI
  * @version 1.0
  */
+@Document(collection = "trips")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class TripMonitor {
+public class TripDocument {
+
+    @Id
     private Long tripId;
+
     private Long driverId;
     private String driverName;
     private List<Long> passengerIds;

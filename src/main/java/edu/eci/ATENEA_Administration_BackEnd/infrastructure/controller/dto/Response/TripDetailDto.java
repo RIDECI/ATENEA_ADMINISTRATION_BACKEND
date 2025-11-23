@@ -1,13 +1,11 @@
-package edu.eci.ATENEA_Administration_BackEnd.domain.model;
+package edu.eci.ATENEA_Administration_BackEnd.infrastructure.controller.dto.Response;
 
-import edu.eci.ATENEA_Administration_BackEnd.domain.model.Enum.TripStatus;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
-
 /**
- * Modelo de dominio para monitoreo de viajes en RideECI
+ * DTO para detalle de viaje en RideECI
  *
  * @author RideECI
  * @version 1.0
@@ -15,14 +13,13 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class TripMonitor {
+public class TripDetailDto {
     private Long tripId;
     private Long driverId;
     private String driverName;
     private List<Long> passengerIds;
     private List<String> passengerNames;
-    private TripStatus status;
+    private String status;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private double estimatedCost;

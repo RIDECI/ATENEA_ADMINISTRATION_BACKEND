@@ -1,9 +1,11 @@
 package edu.eci.ATENEA_Administration_BackEnd;
 
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
+@EnableRabbit
 public class AteneaAdministrationBackEndApplication {
 
 	public static void main(String[] args) {
