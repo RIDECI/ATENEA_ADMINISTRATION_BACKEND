@@ -23,6 +23,8 @@
 * [ Tecnologías Utilizadas](#️-tecnologías-utilizadas)
 * [ Arquitectura Limpia - Organización de Capas](#️-arquitectura-limpia---organización-de-capas)
 * [Diagramas del Módulo](#diagramas-del-módulo)
+* - [Ejecución Local](#ejecución-local)  
+* - [Calidad y CI/CD](#calidad-y-cicd)
 
 
 ---
