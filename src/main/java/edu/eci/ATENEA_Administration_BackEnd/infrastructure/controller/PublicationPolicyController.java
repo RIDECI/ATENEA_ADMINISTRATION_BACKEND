@@ -1,8 +1,8 @@
 package edu.eci.ATENEA_Administration_BackEnd.infrastructure.controller;
 
 import edu.eci.ATENEA_Administration_BackEnd.application.service.PublicationPolicyService;
+import edu.eci.ATENEA_Administration_BackEnd.domain.model.PolicyStrategyContext;
 import edu.eci.ATENEA_Administration_BackEnd.domain.model.PublicationPolicy;
-import edu.eci.ATENEA_Administration_BackEnd.infrastructure.persistence.Entity.PublicationPolicyDocument;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -55,22 +55,34 @@ public class PublicationPolicyController {
     @GetMapping("/allowed")
     @Operation(summary = "Verificar si está permitido publicar en un momento específico")
     public ResponseEntity<AllowedResponse> isAllowed(@RequestParam(required = false) String at,
-                                                     @RequestParam(required = false) String time) {
+                                                     @RequestParam(required = false) String time,
+                                                     @RequestParam(required = false) Long userId,
+                                                     @RequestParam(required = false) String role) {
+
         LocalDateTime when;
-        if (at != null && !at.isBlank()) {
-            when = LocalDateTime.parse(at);
-        } else if (time != null && !time.isBlank()) {
-            LocalTime lt = LocalTime.parse(time);
-            when = LocalDateTime.now().withHour(lt.getHour()).withMinute(lt.getMinute()).withSecond(0).withNano(0);
-        } else {
-            when = LocalDateTime.now();
+        try {
+            if (at != null && !at.isBlank()) {
+                when = LocalDateTime.parse(at);
+            } else if (time != null && !time.isBlank()) {
+                LocalTime lt = LocalTime.parse(time);
+                when = LocalDateTime.now().withHour(lt.getHour()).withMinute(lt.getMinute()).withSecond(0).withNano(0);
+            } else {
+                when = LocalDateTime.now();
+            }
+        } catch (java.time.format.DateTimeParseException e) {
+            return ResponseEntity.badRequest()
+                    .body(new AllowedResponse(false, null, "invalid_datetime_format", null));
         }
 
-        Optional<PublicationPolicy> match = service.findMatchingPolicy(when);
-        AllowedResponse resp = new AllowedResponse(match.isPresent(),
+        PolicyStrategyContext ctx = new PolicyStrategyContext(userId, role);
+        Optional<PublicationPolicy> match = service.findMatchingPolicy(when, ctx);
+
+        AllowedResponse resp = new AllowedResponse(
+                match.isPresent(),
                 match.map(PublicationPolicy::getId).orElse(null),
                 match.map(PublicationPolicy::getName).orElse(null),
-                when);
+                when
+        );
         return ResponseEntity.ok(resp);
     }
 

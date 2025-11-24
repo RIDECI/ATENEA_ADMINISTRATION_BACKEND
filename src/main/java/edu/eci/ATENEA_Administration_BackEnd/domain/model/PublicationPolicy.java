@@ -5,7 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.DayOfWeek;
 import java.time.LocalTime;
+import java.util.List;
 
 /**
  * Modelo de dominio para políticas de publicación en RideECI
@@ -25,4 +27,6 @@ public class PublicationPolicy {
     private LocalTime endTime;
     private boolean enabled;
     private String description;
+    private List<DayOfWeek> allowedDays;
+    private List<String> allowedRoles;
 }

@@ -5,6 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalTime;
+import java.util.List;
 
 /**
  * Entidad para políticas de publicación en MongoDB
@@ -27,4 +28,6 @@ public class PublicationPolicyDocument {
     private LocalTime endTime;
     private boolean enabled;
     private String description;
+    private List<String> allowedDays;
+    private List<String> allowedRoles;
 }

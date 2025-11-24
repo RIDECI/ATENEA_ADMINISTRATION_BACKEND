@@ -1,6 +1,8 @@
 package edu.eci.ATENEA_Administration_BackEnd.application.service;
 
 import edu.eci.ATENEA_Administration_BackEnd.domain.model.PublicationPolicy;
+import edu.eci.ATENEA_Administration_BackEnd.domain.model.PolicyStrategyContext;
+import edu.eci.ATENEA_Administration_BackEnd.domain.model.PolicyStrategyFactory;
 import edu.eci.ATENEA_Administration_BackEnd.infrastructure.persistence.Entity.PublicationPolicyDocument;
 import edu.eci.ATENEA_Administration_BackEnd.infrastructure.persistence.Repository.PublicationPolicyRepository;
 import edu.eci.ATENEA_Administration_BackEnd.infrastructure.persistence.Repository.mapper.PublicationPolicyMapper;
@@ -8,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -54,6 +55,9 @@ public class PublicationPolicyService {
         existing.setEndTime(update.getEndTime());
         existing.setEnabled(update.isEnabled());
         existing.setDescription(update.getDescription());
+        existing.setAllowedDays(update.getAllowedDays() == null ? null :
+                update.getAllowedDays().stream().map(java.time.DayOfWeek::name).toList());
+        existing.setAllowedRoles(update.getAllowedRoles());
         PublicationPolicyDocument saved = repo.save(existing);
         return mapper.toDomain(saved);
     }
@@ -89,6 +93,8 @@ public class PublicationPolicyService {
     }
 
 
+
+
     /**
      * Encuentra una política que coincida con la fecha y hora especificadas
      *
@@ -96,13 +102,26 @@ public class PublicationPolicyService {
      * @return Política que coincide, si existe
      */
     public Optional<PublicationPolicy> findMatchingPolicy(LocalDateTime at) {
+        return findMatchingPolicy(at, null);
+    }
+
+
+    /**
+     * Encuentra una política de publicación que coincida con la fecha/hora y contexto especificados
+     * Aplica múltiples estrategias de validación para determinar la política aplicable
+     *
+     * @param at Fecha y hora a verificar
+     * @param ctx Contexto de estrategia que incluye información del usuario
+     * @return Política que coincide con todas las estrategias, si existe
+     */
+    public Optional<PublicationPolicy> findMatchingPolicy(LocalDateTime at, PolicyStrategyContext ctx) {
         if (at == null) at = LocalDateTime.now();
-        LocalTime t = at.toLocalTime();
+        final LocalDateTime when = at;
         return repo.findAll().stream()
                 .filter(PublicationPolicyDocument::isEnabled)
-                .filter(p -> matchesTime(mapper.toDomain(p), t))
-                .findFirst()
-                .map(mapper::toDomain);
+                .map(mapper::toDomain)
+                .filter(p -> PolicyStrategyFactory.of(p).isSatisfied(p, when, ctx))
+                .findFirst();
     }
 
     /**
@@ -113,29 +132,5 @@ public class PublicationPolicyService {
      */
     public boolean isAllowedAt(LocalDateTime at) {
         return findMatchingPolicy(at).isPresent();
-    }
-
-    /**
-     * Verifica si una política coincide con la hora especificada
-     *
-     * @param p Política de publicación
-     * @param t Hora a verificar
-     * @return true si la hora está dentro del rango de la política
-     */
-    private boolean matchesTime(PublicationPolicy p, LocalTime t) {
-        LocalTime start = p.getStartTime();
-        LocalTime end = p.getEndTime();
-
-        if (start == null || end == null) {
-            return true;
-        }
-        if (start.equals(end)) {
-            return true;
-        }
-        if (!start.isAfter(end)) {
-            return (!t.isBefore(start)) && (!t.isAfter(end));
-        } else {
-            return (!t.isBefore(start)) || (!t.isAfter(end));
-        }
     }
 }
