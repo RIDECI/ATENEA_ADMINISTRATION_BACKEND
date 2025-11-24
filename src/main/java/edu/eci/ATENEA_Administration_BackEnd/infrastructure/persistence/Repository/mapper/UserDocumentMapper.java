@@ -4,6 +4,7 @@ import org.mapstruct.Mapper;
 import java.util.List;
 import edu.eci.ATENEA_Administration_BackEnd.infrastructure.persistence.Entity.UserDocument;
 import edu.eci.ATENEA_Administration_BackEnd.domain.model.User;
+import org.mapstruct.Mapping;
 
 /**
  * Mapper para conversión entre User y UserDocument en RideECI
@@ -20,6 +21,7 @@ public interface UserDocumentMapper {
      * @param d Documento de usuario
      * @return Modelo de dominio de usuario
      */
+    @Mapping(target = "status", source = "state")
     User toDomain(UserDocument d);
 
     /**
@@ -28,6 +30,7 @@ public interface UserDocumentMapper {
      * @param u Modelo de dominio de usuario
      * @return Documento de usuario
      */
+    @Mapping(target = "state", source = "status")
     UserDocument toDocument(User u);
 
     /**

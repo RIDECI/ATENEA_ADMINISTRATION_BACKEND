@@ -104,6 +104,21 @@
             <artifactId>spring-security-core</artifactId>
         </dependency>
 
+
+        <!-- Apache POI para generar XLSX -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.2.3</version>
+        </dependency>
+
+        <!-- OpenPDF para generar PDF -->
+        <dependency>
+            <groupId>com.github.librepdf</groupId>
+            <artifactId>openpdf</artifactId>
+            <version>1.3.30</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -180,14 +195,15 @@
                                 <format>HTML</format>
                                 <format>XML</format>
                             </formats>
+                            <includes>
+                                <include>**/application/service/**</include>
+                                <include>**/infrastructure/controller/**</include>
+                                <include>**/infrastructure/adapters/**</include>
+                            </includes>
                             <excludes>
-                                <exclude>**/model/**</exclude>
-                                <exclude>**/dto/**</exclude>
-                                <exclude>**/enums/**</exclude>
-                                <exclude>**/config/**</exclude>
-                                <exclude>**/mapper/**</exclude>
-                                <exclude>**/exception/**</exclude>
-                                <exclude>**/common/**</exclude>
+                                <exclude>**/infrastructure/controller/dto/Request/**</exclude>
+                                <exclude>**/infrastructure/controller/dto/Response/**</exclude>
+                                <exclude>**/infrastructure/adapters/messaging/**</exclude>
                                 <exclude>**/AteneaAdministrationBackEndApplication.class</exclude>
                             </excludes>
                         </configuration>
@@ -220,14 +236,15 @@
                                     </limits>
                                 </rule>
                             </rules>
+                            <includes>
+                                <include>**/application/service/**</include>
+                                <include>**/infrastructure/controller/**</include>
+                                <include>**/infrastructure/adapters/**</include>
+                            </includes>
                             <excludes>
-                                <exclude>**/model/**</exclude>
-                                <exclude>**/dto/**</exclude>
-                                <exclude>**/enums/**</exclude>
-                                <exclude>**/config/*</exclude>
-                                <exclude>**/mapper/*</exclude>
-                                <exclude>**/exception/*</exclude>
-                                <exclude>**/common/*</exclude>
+                                <exclude>**/infrastructure/controller/dto/Request/**</exclude>
+                                <exclude>**/infrastructure/controller/dto/Response/**</exclude>
+                                <exclude>**/infrastructure/adapters/messaging/**</exclude>
                                 <exclude>**/AteneaAdministrationBackEndApplication.class</exclude>
                             </excludes>
                         </configuration>

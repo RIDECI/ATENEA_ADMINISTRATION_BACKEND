@@ -29,6 +29,7 @@ public class UserService implements GetUsersUseCase, GetUserDetailUseCase,
 
     private final UserRepositoryPort userRepo;
     private final EventPublisher eventPublisher;
+    private final AdminActionService adminActionService;
 
     /**
      * Lista usuarios con filtros opcionales
@@ -74,6 +75,9 @@ public class UserService implements GetUsersUseCase, GetUserDetailUseCase,
         if (req == null) throw new IllegalArgumentException("Suspend request required");
         userRepo.updateStatus(userId, "SUSPENDED");
 
+        adminActionService.recordAction(req.getAdminId(), "SUSPEND_USER", "USER",
+                String.valueOf(userId), "reason=" + req.getReason());
+
         UserSuspendedEvent ev = UserSuspendedEvent.builder()
                 .suspensionId(UUID.randomUUID().toString())
                 .userId(userId)
@@ -97,6 +101,9 @@ public class UserService implements GetUsersUseCase, GetUserDetailUseCase,
     public void activateUser(Long userId, Long adminId) {
         userRepo.updateStatus(userId, "ACTIVE");
 
+        adminActionService.recordAction(adminId, "ACTIVATE_USER", "USER",
+                String.valueOf(userId), "activated");
+
         UserActivatedEvent ev = UserActivatedEvent.builder()
                 .userId(userId)
                 .adminId(adminId)
@@ -116,6 +123,10 @@ public class UserService implements GetUsersUseCase, GetUserDetailUseCase,
     @Transactional
     public void blockUser(Long userId, Long adminId, String reason) {
         userRepo.updateStatus(userId, "BLOCKED");
+
+        adminActionService.recordAction(adminId, "BLOCK_USER", "USER",
+                String.valueOf(userId), reason == null ? "blocked_by_admin" : reason);
+
 
         UserBlockedEvent ev = UserBlockedEvent.builder()
                 .userId(userId)

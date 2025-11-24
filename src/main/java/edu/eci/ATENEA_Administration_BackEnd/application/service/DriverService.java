@@ -26,6 +26,7 @@ import java.util.List;
 public class DriverService implements GetDriversUseCase, ApproveDriverUseCase {
     private final DriverRepositoryPort driverRepo;
     private final EventPublisher eventPublisher;
+    private final AdminActionService adminActionService;
 
 
     /**
@@ -71,6 +72,7 @@ public class DriverService implements GetDriversUseCase, ApproveDriverUseCase {
         d.setVerifiedAt(LocalDateTime.now());
         driverRepo.save(d);
 
+        adminActionService.recordAction(adminId, "APPROVE_DRIVER", "DRIVER", String.valueOf(driverId), "approved driver");
         DriverApprovedEvent event = DriverApprovedEvent.builder()
                 .driverId(driverId)
                 .adminId(adminId)
@@ -94,6 +96,7 @@ public class DriverService implements GetDriversUseCase, ApproveDriverUseCase {
         d.setRejectionReason(reason);
         driverRepo.save(d);
 
+        adminActionService.recordAction(adminId, "REJECT_DRIVER", "DRIVER", String.valueOf(driverId), "reason=" + reason);
         DriverRejectedEvent event = DriverRejectedEvent.builder()
                 .driverId(driverId)
                 .adminId(adminId)
