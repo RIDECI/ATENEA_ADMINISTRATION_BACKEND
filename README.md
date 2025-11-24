@@ -261,5 +261,55 @@ Implementa los **detalles técnicos**: controladores REST, persistencia, configu
 
 ![alt text](docs/uml/DiagramaContexto.png)
 
+# Ejecución Local
+
+## Requesitos
+- Java 17
+- Maven 3.X
+- Docker + Docker Compose
+- Puerto disponiblo 8080
+
+## Ejecución con Maven 
+### 1. Clonar el repositorio
+`git clone https://github.com/RIDECI/ATENEA_ADMINISTRATION_BACKEND.git`
+
+`cd ATENEA_ADMINISTRATION_BACKEND`
+
+### 2. Compilar y ejecutar pruebas
+`./mvnw clean test`
+
+### 3. Ejecutar la aplicación
+`./mvnw spring-boot:run`
+
+Aplicación disponible en: 
+`http://loocalhost:8080`
+
+Ejecucionón con Docker / Docker Compose
+
+`docker build -t atenea-admin-backend .`
+
+`docker-compose up -d`
+
+Mongo y backend se levantan automáticamente con la configuración existente
+
+## Calidad y CI/CD
+
+Incluye:
+
+### GitHub Actions
+
+-Ejecución de pruebas
+
+-Reporte Jacoco
+   
+-Análisis SonarQube
+   
+### Jacoco
+
+-Cobertura mínima requerida
+   
+### SonarQube
+
+-Análisis de bugs, vulnerabilidades y code smells
 
 ---
