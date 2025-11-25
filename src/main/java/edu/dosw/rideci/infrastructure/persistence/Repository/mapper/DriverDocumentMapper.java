@@ -16,7 +16,6 @@ import edu.dosw.rideci.domain.model.Driver;
 @Mapper(componentModel = "spring")
 public interface DriverDocumentMapper {
 
-    DriverDocumentMapper INSTANCE = Mappers.getMapper(DriverDocumentMapper.class);
 
     /**
      * Convierte DriverDocument a Driver

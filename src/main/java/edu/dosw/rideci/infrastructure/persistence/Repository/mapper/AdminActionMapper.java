@@ -17,7 +17,6 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface AdminActionMapper {
 
-    AdminActionMapper INSTANCE = Mappers.getMapper(AdminActionMapper.class);
 
     /**
      * Convierte AdminActionDocument a AdminAction

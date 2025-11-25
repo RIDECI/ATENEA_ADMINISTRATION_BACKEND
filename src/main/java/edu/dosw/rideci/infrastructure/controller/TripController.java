@@ -1,5 +1,6 @@
 package edu.dosw.rideci.infrastructure.controller;
 
+import edu.dosw.rideci.application.port.in.TripMonitoringUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TripController {
 
-    private final TripService tripService;
+    private final TripMonitoringUseCase tripService;
 
     @GetMapping
     public ResponseEntity<List<TripListItemDto>> listTrips(

@@ -1,5 +1,6 @@
 package edu.dosw.rideci.application.service;
 
+import edu.dosw.rideci.application.port.in.TripMonitoringUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +23,7 @@ import java.util.List;
  */
 @Service
 @RequiredArgsConstructor
-public class TripService {
+public class TripService implements TripMonitoringUseCase {
 
     private final TripRepositoryPort tripRepo;
     private final TripMapper mapper;
@@ -38,6 +39,7 @@ public class TripService {
      * @param size Tamaño de la página
      * @return Lista de viajes
      */
+    @Override
     public List<TripListItemDto> listTrips(String search, String status, String type, int page, int size) {
         if (status != null) {
             TripStatus ts;
@@ -56,6 +58,7 @@ public class TripService {
      *
      * @return Lista de viajes en progreso
      */
+    @Override
     public List<TripListItemDto> getActiveTrips() {
         List<TripMonitor> active = tripRepo.findByStatus(TripStatus.IN_PROGRESS);
         return mapper.toListItems(active);
@@ -68,6 +71,7 @@ public class TripService {
      * @return Detalle del viaje
      * @throws java.util.NoSuchElementException Si el viaje no existe
      */
+    @Override
     public TripDetailDto getTripDetail(Long tripId) {
         TripMonitor trip = tripRepo.getTripById(tripId);
         if (trip == null) throw new java.util.NoSuchElementException("Trip not found: " + tripId);
@@ -79,6 +83,7 @@ public class TripService {
      *
      * @return Respuesta con métricas del dashboard
      */
+    @Override
     public DashboardResponse getMetrics() {
         LocalDateTime startOfDay = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
         int tripsToday = (int) tripRepo.countByStartTimeBetween(startOfDay, LocalDateTime.now());

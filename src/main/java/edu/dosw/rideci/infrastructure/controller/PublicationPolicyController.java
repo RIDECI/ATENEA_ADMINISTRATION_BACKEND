@@ -1,5 +1,6 @@
 package edu.dosw.rideci.infrastructure.controller;
 
+import edu.dosw.rideci.application.port.in.PublicationPolicyUseCase;
 import edu.dosw.rideci.application.service.PublicationPolicyService;
 import edu.dosw.rideci.domain.model.PolicyStrategyContext;
 import edu.dosw.rideci.domain.model.PublicationPolicy;
@@ -18,7 +19,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PublicationPolicyController {
 
-    private final PublicationPolicyService service;
+    private final PublicationPolicyUseCase service;
 
     @PostMapping
     @Operation(summary = "Crear una nueva política de publicación")

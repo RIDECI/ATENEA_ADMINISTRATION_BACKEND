@@ -1,5 +1,6 @@
 package edu.dosw.rideci.application.service;
 
+import edu.dosw.rideci.application.port.in.PublicationPolicyUseCase;
 import edu.dosw.rideci.domain.model.PublicationPolicy;
 import edu.dosw.rideci.domain.model.PolicyStrategyContext;
 import edu.dosw.rideci.domain.model.PolicyStrategyFactory;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @RequiredArgsConstructor
-public class PublicationPolicyService {
+public class PublicationPolicyService implements PublicationPolicyUseCase {
 
     private final PublicationPolicyRepository repo;
     private final PublicationPolicyMapper mapper;
@@ -34,7 +35,8 @@ public class PublicationPolicyService {
      * @param doc Política de publicación a crear
      * @return Política de publicación creada
      */
-    public PublicationPolicy createPolicy(PublicationPolicy doc) {
+    @Override
+    public PublicationPolicy createPolicy(PublicationPolicy doc)  {
         PublicationPolicyDocument saved = repo.save(mapper.toDocument(doc));
         return mapper.toDomain(saved);
     }
@@ -47,6 +49,7 @@ public class PublicationPolicyService {
      * @return Política de publicación actualizada
      * @throws NoSuchElementException Si la política no existe
      */
+    @Override
     public PublicationPolicy updatePolicy(String id, PublicationPolicy update) {
         PublicationPolicyDocument existing = repo.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Policy not found: " + id));
@@ -69,6 +72,7 @@ public class PublicationPolicyService {
      * @return Política de publicación encontrada
      * @throws NoSuchElementException Si la política no existe
      */
+    @Override
     public PublicationPolicy getPolicy(String id) {
         return repo.findById(id).map(mapper::toDomain)
                 .orElseThrow(() -> new NoSuchElementException("Policy not found: " + id));
@@ -79,6 +83,7 @@ public class PublicationPolicyService {
      *
      * @return Lista de políticas de publicación
      */
+    @Override
     public List<PublicationPolicy> listPolicies() {
         return repo.findAll().stream().map(mapper::toDomain).collect(Collectors.toList());
     }
@@ -88,6 +93,7 @@ public class PublicationPolicyService {
      *
      * @param id ID de la política a eliminar
      */
+    @Override
     public void deletePolicy(String id) {
         repo.deleteById(id);
     }
@@ -101,6 +107,7 @@ public class PublicationPolicyService {
      * @param at Fecha y hora a verificar (null para fecha/hora actual)
      * @return Política que coincide, si existe
      */
+    @Override
     public Optional<PublicationPolicy> findMatchingPolicy(LocalDateTime at) {
         return findMatchingPolicy(at, null);
     }
@@ -114,6 +121,7 @@ public class PublicationPolicyService {
      * @param ctx Contexto de estrategia que incluye información del usuario
      * @return Política que coincide con todas las estrategias, si existe
      */
+    @Override
     public Optional<PublicationPolicy> findMatchingPolicy(LocalDateTime at, PolicyStrategyContext ctx) {
         if (at == null) at = LocalDateTime.now();
         final LocalDateTime when = at;
@@ -130,6 +138,7 @@ public class PublicationPolicyService {
      * @param at Fecha y hora a verificar
      * @return true si está permitido, false en caso contrario
      */
+    @Override
     public boolean isAllowedAt(LocalDateTime at) {
         return findMatchingPolicy(at).isPresent();
     }

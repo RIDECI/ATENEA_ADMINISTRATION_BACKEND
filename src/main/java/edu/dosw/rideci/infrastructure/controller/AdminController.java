@@ -1,5 +1,7 @@
 package edu.dosw.rideci.infrastructure.controller;
 
+import edu.dosw.rideci.application.port.in.ReportUseCase;
+import edu.dosw.rideci.domain.model.ExportedReport;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -18,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminController {
 
-    private final ReportService reportService;
+    private final ReportUseCase reportService;
 
 
     @PostMapping("/reports")
@@ -47,7 +49,7 @@ public class AdminController {
 
         List<SecurityReport> data = reportService.listReports(type, null, null);
 
-        ReportService.ExportedReport exported = reportService.exportReportsAs(format, data);
+        ExportedReport exported = reportService.exportReportsAs(format, data);
 
         MediaType contentType = MediaType.parseMediaType(exported.mediaType());
         return ResponseEntity.ok()
