@@ -1,4 +1,4 @@
-package edu.dosw.rideci.exceptions;
+package edu.dosw.rideci.application.exceptions;
 
 /**
  * Excepción específica para errores durante la exportación de reportes.

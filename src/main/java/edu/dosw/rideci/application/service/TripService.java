@@ -10,7 +10,7 @@ import edu.dosw.rideci.domain.model.TripMonitor;
 import edu.dosw.rideci.infrastructure.controller.dto.Response.TripListItemDto;
 import edu.dosw.rideci.infrastructure.controller.dto.Response.TripDetailDto;
 import edu.dosw.rideci.infrastructure.controller.dto.Response.DashboardResponse;
-import edu.dosw.rideci.domain.model.Enum.TripStatus;
+import edu.dosw.rideci.domain.model.enums.TripStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;

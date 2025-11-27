@@ -8,7 +8,7 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import edu.dosw.rideci.application.port.in.ReportUseCase;
 import edu.dosw.rideci.domain.model.ExportedReport;
-import edu.dosw.rideci.exceptions.ReportExportException;
+import edu.dosw.rideci.application.exceptions.ReportExportException;
 import edu.dosw.rideci.application.port.out.SecurityReportRepositoryPort;
 import edu.dosw.rideci.domain.model.SecurityReport;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +19,7 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Servicio para gestión de reportes de seguridad en RideECI

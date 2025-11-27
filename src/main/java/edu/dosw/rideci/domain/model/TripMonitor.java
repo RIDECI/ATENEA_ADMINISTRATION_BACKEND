@@ -1,6 +1,6 @@
 package edu.dosw.rideci.domain.model;
 
-import edu.dosw.rideci.domain.model.Enum.TripStatus;
+import edu.dosw.rideci.domain.model.enums.TripStatus;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;

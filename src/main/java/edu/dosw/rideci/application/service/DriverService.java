@@ -8,7 +8,7 @@ import edu.dosw.rideci.application.port.in.GetDriversUseCase;
 import edu.dosw.rideci.application.port.out.DriverRepositoryPort;
 import edu.dosw.rideci.application.port.out.EventPublisher;
 import edu.dosw.rideci.domain.model.Driver;
-import edu.dosw.rideci.exceptions.DriverNotFoundException;
+import edu.dosw.rideci.application.exceptions.DriverNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -1,4 +1,4 @@
-package edu.dosw.rideci.domain.model.Enum;
+package edu.dosw.rideci.domain.model.enums;
 
 /**
  * Enum para estados de viaje en RideECI

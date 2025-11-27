@@ -1,11 +1,15 @@
 package edu.dosw.rideci.application.service;
 
+import edu.dosw.rideci.application.events.PublicationPolicyCreatedEvent;
+import edu.dosw.rideci.application.events.PublicationPolicyDeletedEvent;
+import edu.dosw.rideci.application.events.PublicationPolicyUpdatedEvent;
 import edu.dosw.rideci.application.port.in.PublicationPolicyUseCase;
+import edu.dosw.rideci.application.port.out.EventPublisher;
+import edu.dosw.rideci.application.port.out.PublicationPolicyRepositoryPort;
 import edu.dosw.rideci.domain.model.PublicationPolicy;
 import edu.dosw.rideci.domain.model.PolicyStrategyContext;
 import edu.dosw.rideci.domain.model.PolicyStrategyFactory;
 import edu.dosw.rideci.infrastructure.persistence.Entity.PublicationPolicyDocument;
-import edu.dosw.rideci.infrastructure.persistence.Repository.PublicationPolicyRepository;
 import edu.dosw.rideci.infrastructure.persistence.Repository.mapper.PublicationPolicyMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,8 +30,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PublicationPolicyService implements PublicationPolicyUseCase {
 
-    private final PublicationPolicyRepository repo;
+    private final PublicationPolicyRepositoryPort repo;
     private final PublicationPolicyMapper mapper;
+    private final EventPublisher eventPublisher;
+    private final AdminActionService adminActionService;
 
     /**
      * Crea una nueva política de publicación
@@ -38,7 +44,18 @@ public class PublicationPolicyService implements PublicationPolicyUseCase {
     @Override
     public PublicationPolicy createPolicy(PublicationPolicy doc)  {
         PublicationPolicyDocument saved = repo.save(mapper.toDocument(doc));
-        return mapper.toDomain(saved);
+        PublicationPolicy domain = mapper.toDomain(saved);
+
+        safeAudit(null, "CREATE_POLICY", "PUBLICATION_POLICY", saved.getId(), "created policy: " + domain.getName());
+        PublicationPolicyCreatedEvent ev = PublicationPolicyCreatedEvent.builder()
+                .policyId(saved.getId())
+                .policy(domain)
+                .adminId(null)
+                .createdAt(LocalDateTime.now())
+                .build();
+        safePublish(ev, "admin.policy.created");
+
+        return domain;
     }
 
     /**
@@ -62,7 +79,19 @@ public class PublicationPolicyService implements PublicationPolicyUseCase {
                 update.getAllowedDays().stream().map(java.time.DayOfWeek::name).toList());
         existing.setAllowedRoles(update.getAllowedRoles());
         PublicationPolicyDocument saved = repo.save(existing);
-        return mapper.toDomain(saved);
+        PublicationPolicy domain = mapper.toDomain(saved);
+
+        safeAudit(null, "UPDATE_POLICY", "PUBLICATION_POLICY", saved.getId(), "updated policy: " + domain.getName());
+
+        PublicationPolicyUpdatedEvent ev = PublicationPolicyUpdatedEvent.builder()
+                .policyId(saved.getId())
+                .policy(domain)
+                .adminId(null)
+                .updatedAt(LocalDateTime.now())
+                .build();
+        safePublish(ev, "admin.policy.updated");
+
+        return domain;
     }
 
     /**
@@ -95,9 +124,21 @@ public class PublicationPolicyService implements PublicationPolicyUseCase {
      */
     @Override
     public void deletePolicy(String id) {
-        repo.deleteById(id);
-    }
+        PublicationPolicyDocument maybe = repo.findById(id).orElse(null);
+        String name = maybe != null ? maybe.getName() : null;
 
+        repo.deleteById(id);
+
+        safeAudit(null, "DELETE_POLICY", "PUBLICATION_POLICY", id, "deleted policy: " + (name == null ? id : name));
+
+        PublicationPolicyDeletedEvent ev = PublicationPolicyDeletedEvent.builder()
+                .policyId(id)
+                .policyName(name)
+                .adminId(null)
+                .deletedAt(LocalDateTime.now())
+                .build();
+        safePublish(ev, "admin.policy.deleted");
+    }
 
 
 
@@ -141,5 +182,32 @@ public class PublicationPolicyService implements PublicationPolicyUseCase {
     @Override
     public boolean isAllowedAt(LocalDateTime at) {
         return findMatchingPolicy(at).isPresent();
+    }
+
+    /**
+     * Guarda la accion del admin
+     * @param adminId
+     * @param action
+     * @param targetType
+     * @param targetId
+     * @param details
+     */
+    private void safeAudit(Long adminId, String action, String targetType, String targetId, String details) {
+        try {
+            adminActionService.recordAction(adminId, action, targetType, targetId, details);
+        } catch (Exception ignored) {
+        }
+    }
+
+    /**
+     * Guarda el evento
+     * @param event
+     * @param routingKey
+     */
+    private void safePublish(Object event, String routingKey) {
+        try {
+            eventPublisher.publish(event, routingKey);
+        } catch (Exception ignored) {
+        }
     }
 }

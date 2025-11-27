@@ -8,6 +8,7 @@ import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFacto
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,8 +19,9 @@ import org.springframework.context.annotation.Configuration;
  * @version 1.0
  */
 @Configuration
-public class RabbitConfig {
+public class RabbitMQConfig {
 
+    // Admin
     public static final String EXCHANGE = "admin.exchange";
     public static final String SUSPEND_ROUTING = "admin.user.suspended";
     public static final String VALIDATION_ROUTING = "admin.validation.approved";
@@ -28,6 +30,48 @@ public class RabbitConfig {
     public static final String SUSPEND_QUEUE = "admin.suspend.queue";
     public static final String VALIDATION_QUEUE = "admin.validation.queue";
     public static final String DRIVER_DOCUMENT_QUEUE = "admin.driver.document.queue";
+
+    // Viajes
+    public static final String TRIP_EXCHANGE = "travel.exchange";
+    public static final String TRIP_CREATED_ROUTING_KEY = "travel.created";
+    public static final String TRIP_CREATED_QUEUE = "security.travel.created.queue";
+
+    public static final String TRIP_FINISHED_ROUTING_KEY = "travel.completed";
+    public static final String TRIP_FINISHED_QUEUE = "security.travel.completed.queue";
+
+    // Mensajes del chat
+    public static final String CHAT_EXCHANGE = "rideci.chat.exchange";
+    public static final String CHAT_ROUTING_KEY = "chat.message";
+    public static final String CHAT_QUEUE = "rideci.chat.queue";
+
+
+
+    @Bean
+    public TopicExchange tripExchange() {
+        return ExchangeBuilder.topicExchange(TRIP_EXCHANGE).durable(true).build();
+    }
+
+    @Bean
+    public Queue tripCreatedQueue() {
+        return QueueBuilder.durable(TRIP_CREATED_QUEUE).build();
+    }
+
+    @Bean
+    public Queue tripFinishedQueue() {
+        return QueueBuilder.durable(TRIP_FINISHED_QUEUE).build();
+    }
+
+    @Bean
+    public Binding tripCreatedBinding(@Qualifier("tripCreatedQueue") Queue tripCreatedQueue,
+                                      @Qualifier("tripExchange") TopicExchange tripExchange) {
+        return BindingBuilder.bind(tripCreatedQueue).to(tripExchange).with(TRIP_CREATED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding tripFinishedBinding(@Qualifier("tripFinishedQueue") Queue tripFinishedQueue,
+                                       @Qualifier("tripExchange") TopicExchange tripExchange) {
+        return BindingBuilder.bind(tripFinishedQueue).to(tripExchange).with(TRIP_FINISHED_ROUTING_KEY);
+    }
 
     /**
      * Configura el exchange de administración
@@ -39,14 +83,15 @@ public class RabbitConfig {
         return ExchangeBuilder.topicExchange(EXCHANGE).durable(true).build();
     }
 
-
     /**
      * Configura la cola de suspensión
      *
      * @return Queue configurada
      */
     @Bean
-    public Queue suspendQueue() { return QueueBuilder.durable(SUSPEND_QUEUE).build(); }
+    public Queue suspendQueue() {
+        return QueueBuilder.durable(SUSPEND_QUEUE).build();
+    }
 
     /**
      * Configura la cola de validación
@@ -54,7 +99,9 @@ public class RabbitConfig {
      * @return Queue configurada
      */
     @Bean
-    public Queue validationQueue() { return QueueBuilder.durable(VALIDATION_QUEUE).build(); }
+    public Queue validationQueue() {
+        return QueueBuilder.durable(VALIDATION_QUEUE).build();
+    }
 
     /**
      * Configura la cola de documentos de conductor
@@ -62,7 +109,9 @@ public class RabbitConfig {
      * @return Queue configurada
      */
     @Bean
-    public Queue driverDocumentQueue() { return QueueBuilder.durable(DRIVER_DOCUMENT_QUEUE).build(); }
+    public Queue driverDocumentQueue() {
+        return QueueBuilder.durable(DRIVER_DOCUMENT_QUEUE).build();
+    }
 
     /**
      * Configura el binding para suspensión
@@ -72,10 +121,10 @@ public class RabbitConfig {
      * @return Binding configurado
      */
     @Bean
-    public Binding bindSuspend(Queue suspendQueue, TopicExchange adminExchange) {
+    public Binding bindSuspend(@Qualifier("suspendQueue") Queue suspendQueue,
+                               @Qualifier("adminExchange") TopicExchange adminExchange) {
         return BindingBuilder.bind(suspendQueue).to(adminExchange).with(SUSPEND_ROUTING);
     }
-
 
     /**
      * Configura el binding para validación
@@ -85,7 +134,8 @@ public class RabbitConfig {
      * @return Binding configurado
      */
     @Bean
-    public Binding bindValidation(Queue validationQueue, TopicExchange adminExchange) {
+    public Binding bindValidation(@Qualifier("validationQueue") Queue validationQueue,
+                                  @Qualifier("adminExchange") TopicExchange adminExchange) {
         return BindingBuilder.bind(validationQueue).to(adminExchange).with(VALIDATION_ROUTING);
     }
 
@@ -97,8 +147,26 @@ public class RabbitConfig {
      * @return Binding configurado
      */
     @Bean
-    public Binding bindDriverDocument(Queue driverDocumentQueue, TopicExchange adminExchange) {
+    public Binding bindDriverDocument(@Qualifier("driverDocumentQueue") Queue driverDocumentQueue,
+                                      @Qualifier("adminExchange") TopicExchange adminExchange) {
         return BindingBuilder.bind(driverDocumentQueue).to(adminExchange).with(DRIVER_DOCUMENT_ROUTING);
+    }
+
+
+    @Bean
+    public TopicExchange chatExchange() {
+        return ExchangeBuilder.topicExchange(CHAT_EXCHANGE).durable(true).build();
+    }
+
+    @Bean
+    public Queue chatQueue() {
+        return QueueBuilder.durable(CHAT_QUEUE).build();
+    }
+
+    @Bean
+    public Binding chatBinding(@Qualifier("chatQueue") Queue chatQueue,
+                               @Qualifier("chatExchange") TopicExchange chatExchange) {
+        return BindingBuilder.bind(chatQueue).to(chatExchange).with(CHAT_ROUTING_KEY);
     }
 
     /**
@@ -114,6 +182,7 @@ public class RabbitConfig {
         return new Jackson2JsonMessageConverter(mapper);
     }
 
+
     /**
      * Configura el template de RabbitMQ
      *
@@ -128,7 +197,6 @@ public class RabbitConfig {
         return t;
     }
 
-
     /**
      * Configura el factory para listeners RabbitMQ
      *
@@ -136,6 +204,7 @@ public class RabbitConfig {
      * @param conv Convertidor de mensajes
      * @return SimpleRabbitListenerContainerFactory configurado
      */
+
     @Bean
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(ConnectionFactory cf,
                                                                                Jackson2JsonMessageConverter conv) {

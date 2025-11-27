@@ -8,13 +8,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import edu.dosw.rideci.application.port.in.*;
 import edu.dosw.rideci.application.port.out.EventPublisher;
 import edu.dosw.rideci.application.port.out.UserRepositoryPort;
 import edu.dosw.rideci.domain.model.User;
-import edu.dosw.rideci.exceptions.UserNotFoundException;
+import edu.dosw.rideci.application.exceptions.UserNotFoundException;
 import edu.dosw.rideci.infrastructure.controller.dto.Request.SuspendUserRequestDto;
-import edu.dosw.rideci.application.events.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -77,10 +75,25 @@ public class UserService implements GetUsersUseCase, GetUserDetailUseCase,
     @Transactional
     public void suspendUser(Long userId, SuspendUserRequestDto req) {
         if (req == null) throw new IllegalArgumentException("Suspend request required");
-        userRepo.updateStatus(userId, "SUSPENDED");
+
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + userId));
+
+        if ("SUSPENDED".equalsIgnoreCase(user.getStatus())) {
+            return;
+        }
+
+        String previousRole = user.getRole();
+        if (previousRole != null && !previousRole.isBlank()) {
+            user.setPreviousRole(previousRole);
+        }
+
+        user.setRole("STUDENT, ADMIN");
+        user.setStatus("SUSPENDED");
+        userRepo.save(user);
 
         adminActionService.recordAction(req.getAdminId(), "SUSPEND_USER", "USER",
-                String.valueOf(userId), "reason=" + req.getReason());
+                String.valueOf(userId), "reason=" + req.getReason() + (previousRole != null ? ",prevRole=" + previousRole : ""));
 
         UserSuspendedEvent ev = UserSuspendedEvent.builder()
                 .suspensionId(UUID.randomUUID().toString())
@@ -103,7 +116,19 @@ public class UserService implements GetUsersUseCase, GetUserDetailUseCase,
     @Override
     @Transactional
     public void activateUser(Long userId, Long adminId) {
-        userRepo.updateStatus(userId, "ACTIVE");
+
+        User u = userRepo.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + userId));
+
+        if (u.getPreviousRole() != null && !u.getPreviousRole().isBlank()) {
+            u.setRole(u.getPreviousRole());
+            u.setPreviousRole(null);
+        } else {
+            u.setRole(u.getRole() == null ? "STUDENT" : u.getRole());
+        }
+
+        u.setStatus("ACTIVE");
+        userRepo.save(u);
 
         adminActionService.recordAction(adminId, "ACTIVATE_USER", "USER",
                 String.valueOf(userId), "activated");
@@ -126,11 +151,16 @@ public class UserService implements GetUsersUseCase, GetUserDetailUseCase,
     @Override
     @Transactional
     public void blockUser(Long userId, Long adminId, String reason) {
-        userRepo.updateStatus(userId, "BLOCKED");
+        User u = userRepo.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + userId));
+
+        u.setPreviousRole(u.getRole());
+        u.setRole("USER");
+        u.setStatus("BLOCKED");
+        userRepo.save(u);
 
         adminActionService.recordAction(adminId, "BLOCK_USER", "USER",
                 String.valueOf(userId), reason == null ? "blocked_by_admin" : reason);
-
 
         UserBlockedEvent ev = UserBlockedEvent.builder()
                 .userId(userId)

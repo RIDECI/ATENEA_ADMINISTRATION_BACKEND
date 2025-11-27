@@ -1,6 +1,6 @@
 package edu.dosw.rideci.infrastructure.persistence.Entity;
 
-import edu.dosw.rideci.domain.model.Enum.TripStatus;
+import edu.dosw.rideci.domain.model.enums.TripStatus;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.*;

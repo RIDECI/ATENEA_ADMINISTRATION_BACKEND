@@ -198,7 +198,6 @@
                             <includes>
                                 <include>**/application/service/**</include>
                                 <include>**/infrastructure/controller/**</include>
-                                <include>**/infrastructure/adapters/**</include>
                             </includes>
                             <excludes>
                                 <exclude>**/infrastructure/controller/dto/Request/**</exclude>
@@ -239,7 +238,6 @@
                             <includes>
                                 <include>**/application/service/**</include>
                                 <include>**/infrastructure/controller/**</include>
-                                <include>**/infrastructure/adapters/**</include>
                             </includes>
                             <excludes>
                                 <exclude>**/infrastructure/controller/dto/Request/**</exclude>

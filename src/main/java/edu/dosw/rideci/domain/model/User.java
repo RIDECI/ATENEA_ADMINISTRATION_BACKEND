@@ -24,4 +24,5 @@ public class User {
     private LocalDateTime lastLogin;
     private String phoneNumber;
     private LocalDateTime createdAt;
+    private String previousRole;
 }

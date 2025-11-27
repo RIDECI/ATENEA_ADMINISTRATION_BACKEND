@@ -1,4 +1,4 @@
-package edu.dosw.rideci.exceptions;
+package edu.dosw.rideci.application.exceptions;
 
 /**
  * Excepción para conductor no encontrado en RideECI

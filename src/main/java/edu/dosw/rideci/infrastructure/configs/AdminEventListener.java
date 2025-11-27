@@ -3,7 +3,6 @@ package edu.dosw.rideci.infrastructure.configs;
 import edu.dosw.rideci.application.events.DriverDocumentUploadedEvent;
 import edu.dosw.rideci.application.events.UserSuspendedEvent;
 import edu.dosw.rideci.application.events.ValidationApprovedEvent;
-import edu.dosw.rideci.application.events.*;
 import edu.dosw.rideci.application.port.out.EventPublisher;
 import edu.dosw.rideci.application.port.out.SecurityReportRepositoryPort;
 import edu.dosw.rideci.domain.model.SecurityReport;
@@ -34,7 +33,7 @@ public class AdminEventListener {
      *
      * @param ev Evento de usuario suspendido
      */
-    @RabbitListener(queues = RabbitConfig.SUSPEND_QUEUE, containerFactory = "rabbitListenerContainerFactory")
+    @RabbitListener(queues = RabbitMQConfig.SUSPEND_QUEUE, containerFactory = "rabbitListenerContainerFactory")
     public void onUserSuspended(UserSuspendedEvent ev) {
         log.info("[AdminEventListener] Received UserSuspendedEvent: {}", ev);
 
@@ -61,7 +60,7 @@ public class AdminEventListener {
      *
      * @param ev Evento de validación aprobada
      */
-    @RabbitListener(queues = RabbitConfig.VALIDATION_QUEUE, containerFactory = "rabbitListenerContainerFactory")
+    @RabbitListener(queues = RabbitMQConfig.VALIDATION_QUEUE, containerFactory = "rabbitListenerContainerFactory")
     public void onValidationApproved(ValidationApprovedEvent ev) {
         log.info("[AdminEventListener] Received ValidationApprovedEvent: {}", ev);
 
@@ -88,7 +87,7 @@ public class AdminEventListener {
      *
      * @param ev Evento de documento subido
      */
-    @RabbitListener(queues = RabbitConfig.DRIVER_DOCUMENT_QUEUE, containerFactory = "rabbitListenerContainerFactory")
+    @RabbitListener(queues = RabbitMQConfig.DRIVER_DOCUMENT_QUEUE, containerFactory = "rabbitListenerContainerFactory")
     public void onDriverDocumentUploaded(DriverDocumentUploadedEvent ev) {
         log.info("[AdminEventListener] Received DriverDocumentUploadedEvent: {}", ev);
 

@@ -1,7 +1,7 @@
 package edu.dosw.rideci.infrastructure.persistence.Repository;
 
 import edu.dosw.rideci.infrastructure.persistence.Entity.TripDocument;
-import edu.dosw.rideci.domain.model.Enum.TripStatus;
+import edu.dosw.rideci.domain.model.enums.TripStatus;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import java.time.LocalDateTime;
 import java.util.List;

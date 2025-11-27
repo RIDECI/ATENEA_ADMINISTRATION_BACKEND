@@ -2,7 +2,7 @@ package edu.dosw.rideci.infrastructure.adapters.persistence;
 
 import edu.dosw.rideci.application.port.out.TripRepositoryPort;
 import edu.dosw.rideci.domain.model.TripMonitor;
-import edu.dosw.rideci.domain.model.Enum.TripStatus;
+import edu.dosw.rideci.domain.model.enums.TripStatus;
 import edu.dosw.rideci.infrastructure.persistence.Repository.TripMongoRepository;
 import edu.dosw.rideci.infrastructure.persistence.Repository.mapper.TripDocumentMapper;
 import lombok.RequiredArgsConstructor;
@@ -110,5 +110,12 @@ public class TripRepositoryAdapter implements TripRepositoryPort {
     public TripMonitor getTripById(Long tripId) {
         Optional<?> maybe = repo.findById(tripId).map(mapper::toDomain);
         return (TripMonitor) maybe.orElse(null);
+    }
+
+    @Override
+    public TripMonitor save(TripMonitor t) {
+        var doc = mapper.toDocument(t);
+        var savedDoc = repo.save(doc);
+        return mapper.toDomain(savedDoc);
     }
 }

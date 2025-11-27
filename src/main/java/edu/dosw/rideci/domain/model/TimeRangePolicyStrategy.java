@@ -6,7 +6,6 @@ import java.time.LocalTime;
 /**
  * Estrategia para validación de rango de tiempo
  * Verifica que la hora actual esté dentro del rango definido por la política
- * Maneja rangos que cruzan la medianoche (ej: 22:00 - 06:00)
  *
  * @author RideECI
  * @version 1.0
@@ -18,7 +17,7 @@ public class TimeRangePolicyStrategy implements PolicyStrategy {
      *
      * @param policy Política de publicación a evaluar
      * @param at Fecha y hora a verificar
-     * @param ctx Contexto de estrategia (no utilizado en esta estrategia)
+     * @param ctx Contexto de estrategia
      * @return true si no hay rangos definidos, o si la hora está dentro del rango
      */
     @Override

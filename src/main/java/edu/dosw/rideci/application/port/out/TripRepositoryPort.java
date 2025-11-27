@@ -1,6 +1,6 @@
 package edu.dosw.rideci.application.port.out;
 
-import edu.dosw.rideci.domain.model.Enum.TripStatus;
+import edu.dosw.rideci.domain.model.enums.TripStatus;
 import edu.dosw.rideci.domain.model.TripMonitor;
 
 import java.time.LocalDateTime;
@@ -73,4 +73,9 @@ public interface TripRepositoryPort {
      * @return Viaje encontrado
      */
     TripMonitor getTripById(Long tripId);
+
+    /**
+     * Persistir o actualizar un TripMonitor.
+     */
+    TripMonitor save(TripMonitor trip);
 }
