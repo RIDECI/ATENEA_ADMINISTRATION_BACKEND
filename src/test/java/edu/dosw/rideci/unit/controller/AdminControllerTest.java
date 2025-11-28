@@ -8,8 +8,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,7 +39,7 @@ class AdminControllerTest {
 
         ResponseEntity<SecurityReport> res = controller.createReport(r);
 
-        assertEquals(200, res.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, res.getStatusCode());
         assertEquals("1", res.getBody().getId());
     }
 
@@ -47,7 +49,7 @@ class AdminControllerTest {
         when(reportService.listReports(null, null, null)).thenReturn(List.of(r));
         ResponseEntity<List<SecurityReport>> res = controller.listReports(null, null, null);
 
-        assertEquals(200, res.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, res.getStatusCode());
         assertEquals(1, res.getBody().size());
     }
 
@@ -61,9 +63,31 @@ class AdminControllerTest {
         when(reportService.exportReportsAs("pdf", List.of(r))).thenReturn(exported);
         ResponseEntity<byte[]> res = controller.exportReports(null, "pdf");
 
-        assertEquals(200, res.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, res.getStatusCode());
         assertEquals("attachment; filename=\"reports.pdf\"", res.getHeaders().getFirst(HttpHeaders.CONTENT_DISPOSITION));
         assertEquals(MediaType.parseMediaType("application/pdf"), res.getHeaders().getContentType());
         assertArrayEquals(content, res.getBody());
     }
+
+    @Test
+    void shouldListReportsWhitDate() {
+        SecurityReport r = SecurityReport.builder().id("1").title("t").build();
+        when(reportService.listReports(any(), any(), any())).thenReturn(List.of(r));
+        String from = "2025-01-02T10:00:00";
+        String to   = "2025-01-03T11:30:00";
+
+        ResponseEntity<List<SecurityReport>> res = controller.listReports("INC", from, to);
+
+        assertEquals(HttpStatus.OK, res.getStatusCode());
+        assertEquals(1, res.getBody().size());
+
+        ArgumentCaptor<LocalDateTime> capFrom = ArgumentCaptor.forClass(LocalDateTime.class);
+        ArgumentCaptor<LocalDateTime> capTo   = ArgumentCaptor.forClass(LocalDateTime.class);
+
+        verify(reportService, times(1)).listReports(eq("INC"), capFrom.capture(), capTo.capture());
+
+        assertEquals(LocalDateTime.parse(from), capFrom.getValue());
+        assertEquals(LocalDateTime.parse(to), capTo.getValue());
+    }
+
 }

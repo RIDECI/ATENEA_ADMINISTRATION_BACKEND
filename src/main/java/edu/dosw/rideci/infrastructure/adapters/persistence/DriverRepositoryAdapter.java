@@ -2,9 +2,9 @@ package edu.dosw.rideci.infrastructure.adapters.persistence;
 
 import edu.dosw.rideci.application.port.out.DriverRepositoryPort;
 import edu.dosw.rideci.domain.model.Driver;
-import edu.dosw.rideci.infrastructure.persistence.Entity.DriverDocument;
-import edu.dosw.rideci.infrastructure.persistence.Repository.DriverMongoRepository;
-import edu.dosw.rideci.infrastructure.persistence.Repository.mapper.DriverDocumentMapper;
+import edu.dosw.rideci.infrastructure.persistence.entity.DriverDocument;
+import edu.dosw.rideci.infrastructure.persistence.repository.DriverMongoRepository;
+import edu.dosw.rideci.infrastructure.persistence.repository.mapper.DriverDocumentMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

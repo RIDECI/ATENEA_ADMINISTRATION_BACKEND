@@ -11,6 +11,10 @@ import java.util.List;
  */
 public class PolicyStrategyFactory {
 
+    private PolicyStrategyFactory() {
+        throw new UnsupportedOperationException("PolicyStrategyFactory is a utility class and cannot be instantiated");
+    }
+
     /**
      * Crea una estrategia compuesta basada en los criterios definidos en la política
      *

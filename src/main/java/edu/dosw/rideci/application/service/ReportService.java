@@ -17,7 +17,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -35,8 +34,6 @@ public class ReportService implements ReportUseCase {
     private static final List<String> HEADERS = List.of(
             "id", "title", "type", "createdBy", "occurredAt", "createdAt", "status", "description"
     );
-
-
 
     /**
      * Crea un nuevo reporte de seguridad
@@ -64,7 +61,6 @@ public class ReportService implements ReportUseCase {
         return reportRepo.findAll();
     }
 
-
     /**
      * Exporta reportes al formato especificado
      *
@@ -79,7 +75,7 @@ public class ReportService implements ReportUseCase {
                 byte[] pdf = exportReportsToPdf(reports);
                 return new ExportedReport(pdf, "reports.pdf", "application/pdf");
             case "csv":
-                byte[] csvBytes = exportReportsToCsv(reports).getBytes(StandardCharsets.UTF_8);
+                byte[] csvBytes = exportReportsToCsv(reports).getBytes(java.nio.charset.StandardCharsets.UTF_8);
                 return new ExportedReport(csvBytes, "reports.csv", "text/csv; charset=UTF-8");
             case "xlsx":
             default:
@@ -146,7 +142,7 @@ public class ReportService implements ReportUseCase {
      * @throws RuntimeException Si ocurre error durante la generación
      */
     public byte[] exportReportsToXlsx(List<SecurityReport> reports) {
-        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+        try (Workbook workbook = createWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
             Sheet sheet = workbook.createSheet("Security Reports");
 
@@ -162,6 +158,14 @@ public class ReportService implements ReportUseCase {
         } catch (Exception e) {
             throw new ReportExportException("Error generating XLSX report", e);
         }
+    }
+
+    /**
+     * Hook protegido para permitir tests que simulen fallos al crear o escribir el workbook.
+     * Por defecto devuelve XSSFWorkbook.
+     */
+    protected Workbook createWorkbook() {
+        return new XSSFWorkbook();
     }
 
     /**
@@ -185,6 +189,7 @@ public class ReportService implements ReportUseCase {
      * @param sheet Hoja de Excel
      * @param headerStyle Estilo para encabezados
      */
+
     private void createHeaderRow(Sheet sheet, CellStyle headerStyle) {
         Row headerRow = sheet.createRow(0);
         for (int i = 0; i < HEADERS.size(); i++) {
@@ -193,7 +198,6 @@ public class ReportService implements ReportUseCase {
             c.setCellStyle(headerStyle);
         }
     }
-
 
     /**
      * Pobla las filas de datos en la hoja de Excel
@@ -238,7 +242,7 @@ public class ReportService implements ReportUseCase {
     public byte[] exportReportsToPdf(List<SecurityReport> reports) {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Document document = new Document();
-            PdfWriter.getInstance(document, out);
+            createPdfWriter(document, out);
             document.open();
 
             addPdfTitle(document);
@@ -254,6 +258,13 @@ public class ReportService implements ReportUseCase {
     }
 
     /**
+     * Hook protegido para permitir tests que simulen fallos al crear el PdfWriter.
+     */
+    protected PdfWriter createPdfWriter(Document document, ByteArrayOutputStream out) throws DocumentException {
+        return PdfWriter.getInstance(document, out);
+    }
+
+    /**
      * Agrega título y fecha al documento PDF
      *
      * @param document Documento PDF
@@ -266,6 +277,7 @@ public class ReportService implements ReportUseCase {
         document.add(new Paragraph("Generated at: " + LocalDateTime.now().toString()));
         document.add(new Paragraph(" "));
     }
+
 
     /**
      * Agrega tabla de datos al documento PDF

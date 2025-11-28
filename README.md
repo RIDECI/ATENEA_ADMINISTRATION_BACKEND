@@ -447,9 +447,19 @@ Utiliza MongoDB para almacenar datos institucionales.
 
 ---
 
-[Falta explicación e implementarlos]
+Los diagramas de secuencias estan enfocados en seguir la estructura limpia del proyecto siguiendo el el siguiente flujo:
 
-![Sequence Diagrams](./docs/diagramaSecuencias.png)
+- Controller
+- Use Case
+- Repository Port
+- Repository Adapter
+- Mongo Repository 
+
+Luego usa la base de datos Mongo para evidenciar los documentos 
+
+
+
+📄 [Ver diagrama de secuencia](docs/pdf/diagramaSecuencias.pdf)
 
 
 
@@ -576,14 +586,32 @@ Testing is a essential part of the project functionability, this part will show 
 ### 📊 Code Coverage (JaCoCo)
 
 ---
-![JaCoCo](url.png)
+
+[Ver video de cobertura y jacoco](https://youtu.be/EU2rkBedgvs)
+
+![JaCoCo](docs/imagenes/jacoco1.png)
+
+
+![JaCoCo](docs/imagenes/jacoco2.png)
+
+
+![JaCoCo](docs/imagenes/jacoco3.png)
+
+
+
 
 
 ### 🔍 Static Analysis (SonarQube)
 
 ---
-![SonarQube](url.png)
 
+[Ver video de cobertura de sonar](https://youtu.be/Gdg_f3UIo0c)
+
+![SonarQube](docs/imagenes/sonar.png)
+
+![SonarQube](docs/imagenes/sonar2.png)
+
+![SonarQube](docs/imagenes/sonar3.png)
 
 
 ### 💻  Evidence Swagger

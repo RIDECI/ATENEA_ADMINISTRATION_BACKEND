@@ -3,7 +3,7 @@ package edu.dosw.rideci.application.mapper;
 import org.mapstruct.Mapper;
 import java.util.List;
 import edu.dosw.rideci.domain.model.User;
-import edu.dosw.rideci.infrastructure.controller.dto.Response.UserDto;
+import edu.dosw.rideci.infrastructure.controller.dto.response.UserDto;
 
 /**
  * Mapper para conversión entre entidades User y DTOs en RideECI

@@ -1,8 +1,8 @@
 package edu.dosw.rideci.infrastructure.adapters.persistence;
 
 import edu.dosw.rideci.application.port.out.PublicationPolicyRepositoryPort;
-import edu.dosw.rideci.infrastructure.persistence.Entity.PublicationPolicyDocument;
-import edu.dosw.rideci.infrastructure.persistence.Repository.PublicationPolicyRepository;
+import edu.dosw.rideci.infrastructure.persistence.entity.PublicationPolicyDocument;
+import edu.dosw.rideci.infrastructure.persistence.repository.PublicationPolicyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

@@ -2,9 +2,9 @@ package edu.dosw.rideci.unit.usecases;
 
 import edu.dosw.rideci.application.service.AdminActionService;
 import edu.dosw.rideci.domain.model.AdminAction;
-import edu.dosw.rideci.infrastructure.persistence.Entity.AdminActionDocument;
-import edu.dosw.rideci.infrastructure.persistence.Repository.AdminActionRepository;
-import edu.dosw.rideci.infrastructure.persistence.Repository.mapper.AdminActionMapper;
+import edu.dosw.rideci.infrastructure.persistence.entity.AdminActionDocument;
+import edu.dosw.rideci.infrastructure.persistence.repository.AdminActionRepository;
+import edu.dosw.rideci.infrastructure.persistence.repository.mapper.AdminActionMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;

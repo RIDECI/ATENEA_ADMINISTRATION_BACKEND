@@ -3,13 +3,14 @@ package edu.dosw.rideci.unit.controller;
 import edu.dosw.rideci.application.port.in.TripMonitoringUseCase;
 
 import edu.dosw.rideci.infrastructure.controller.TripController;
-import edu.dosw.rideci.infrastructure.controller.dto.Response.DashboardResponse;
-import edu.dosw.rideci.infrastructure.controller.dto.Response.TripDetailDto;
-import edu.dosw.rideci.infrastructure.controller.dto.Response.TripListItemDto;
+import edu.dosw.rideci.infrastructure.controller.dto.response.DashboardResponse;
+import edu.dosw.rideci.infrastructure.controller.dto.response.TripDetailDto;
+import edu.dosw.rideci.infrastructure.controller.dto.response.TripListItemDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -36,7 +37,7 @@ class TripControllerTest {
         when(tripService.listTrips(null, null, null, 0, 20)).thenReturn(List.of(item));
         ResponseEntity<List<TripListItemDto>> res = controller.listTrips(null, null, null, 0, 20);
 
-        assertEquals(200, res.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, res.getStatusCode());
         assertEquals(1, res.getBody().size());
     }
 
@@ -46,7 +47,7 @@ class TripControllerTest {
         when(tripService.getActiveTrips()).thenReturn(List.of(item));
         ResponseEntity<List<TripListItemDto>> res = controller.activeTrips();
 
-        assertEquals(200, res.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, res.getStatusCode());
         assertEquals(1, res.getBody().size());
     }
 
@@ -56,7 +57,7 @@ class TripControllerTest {
         TripDetailDto dto = new TripDetailDto();
         when(tripService.getTripDetail(id)).thenReturn(dto);
         ResponseEntity<TripDetailDto> res = controller.getTripDetail(id);
-        assertEquals(200, res.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, res.getStatusCode());
         assertSame(dto, res.getBody());
     }
 
@@ -65,7 +66,7 @@ class TripControllerTest {
         DashboardResponse dr = new DashboardResponse();
         when(tripService.getMetrics()).thenReturn(dr);
         ResponseEntity<DashboardResponse> res = controller.metrics();
-        assertEquals(200, res.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, res.getStatusCode());
         assertSame(dr, res.getBody());
     }
 }

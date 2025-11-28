@@ -1,9 +1,9 @@
 package edu.dosw.rideci.application.service;
 
 import edu.dosw.rideci.domain.model.AdminAction;
-import edu.dosw.rideci.infrastructure.persistence.Entity.AdminActionDocument;
-import edu.dosw.rideci.infrastructure.persistence.Repository.AdminActionRepository;
-import edu.dosw.rideci.infrastructure.persistence.Repository.mapper.AdminActionMapper;
+import edu.dosw.rideci.infrastructure.persistence.entity.AdminActionDocument;
+import edu.dosw.rideci.infrastructure.persistence.repository.AdminActionRepository;
+import edu.dosw.rideci.infrastructure.persistence.repository.mapper.AdminActionMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

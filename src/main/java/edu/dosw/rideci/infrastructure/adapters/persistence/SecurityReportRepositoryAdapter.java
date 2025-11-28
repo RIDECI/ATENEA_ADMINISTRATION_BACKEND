@@ -2,8 +2,8 @@ package edu.dosw.rideci.infrastructure.adapters.persistence;
 
 import edu.dosw.rideci.application.port.out.SecurityReportRepositoryPort;
 import edu.dosw.rideci.domain.model.SecurityReport;
-import edu.dosw.rideci.infrastructure.persistence.Entity.SecurityReportDocument;
-import edu.dosw.rideci.infrastructure.persistence.Repository.SecurityReportMongoRepository;
+import edu.dosw.rideci.infrastructure.persistence.entity.SecurityReportDocument;
+import edu.dosw.rideci.infrastructure.persistence.repository.SecurityReportMongoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

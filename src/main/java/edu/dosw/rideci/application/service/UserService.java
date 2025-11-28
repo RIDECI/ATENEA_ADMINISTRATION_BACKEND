@@ -12,7 +12,7 @@ import edu.dosw.rideci.application.port.out.EventPublisher;
 import edu.dosw.rideci.application.port.out.UserRepositoryPort;
 import edu.dosw.rideci.domain.model.User;
 import edu.dosw.rideci.application.exceptions.UserNotFoundException;
-import edu.dosw.rideci.infrastructure.controller.dto.Request.SuspendUserRequestDto;
+import edu.dosw.rideci.infrastructure.controller.dto.request.SuspendUserRequestDto;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -32,6 +32,7 @@ public class UserService implements GetUsersUseCase, GetUserDetailUseCase,
     private final UserRepositoryPort userRepo;
     private final EventPublisher eventPublisher;
     private final AdminActionService adminActionService;
+    private static final String USER_NOT_FOUND = "User not found: ";
 
     /**
      * Lista usuarios con filtros opcionales
@@ -61,7 +62,7 @@ public class UserService implements GetUsersUseCase, GetUserDetailUseCase,
      */
     @Override
     public User getUserById(Long id) {
-        return userRepo.findById(id).orElseThrow(() -> new UserNotFoundException("User not found: " + id));
+        return userRepo.findById(id).orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND + id));
     }
 
     /**
@@ -77,7 +78,7 @@ public class UserService implements GetUsersUseCase, GetUserDetailUseCase,
         if (req == null) throw new IllegalArgumentException("Suspend request required");
 
         User user = userRepo.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found: " + userId));
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND + userId));
 
         if ("SUSPENDED".equalsIgnoreCase(user.getStatus())) {
             return;
@@ -118,7 +119,7 @@ public class UserService implements GetUsersUseCase, GetUserDetailUseCase,
     public void activateUser(Long userId, Long adminId) {
 
         User u = userRepo.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found: " + userId));
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND + userId));
 
         if (u.getPreviousRole() != null && !u.getPreviousRole().isBlank()) {
             u.setRole(u.getPreviousRole());
@@ -152,7 +153,7 @@ public class UserService implements GetUsersUseCase, GetUserDetailUseCase,
     @Transactional
     public void blockUser(Long userId, Long adminId, String reason) {
         User u = userRepo.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found: " + userId));
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND + userId));
 
         u.setPreviousRole(u.getRole());
         u.setRole("USER");

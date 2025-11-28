@@ -3,13 +3,14 @@ package edu.dosw.rideci.unit.controller;
 import edu.dosw.rideci.application.port.in.*;
 import edu.dosw.rideci.domain.model.User;
 import edu.dosw.rideci.infrastructure.controller.UsersController;
-import edu.dosw.rideci.infrastructure.controller.dto.Request.SuspendUserRequestDto;
-import edu.dosw.rideci.infrastructure.controller.dto.Response.UserDto;
+import edu.dosw.rideci.infrastructure.controller.dto.request.SuspendUserRequestDto;
+import edu.dosw.rideci.infrastructure.controller.dto.response.UserDto;
 import edu.dosw.rideci.application.mapper.UserMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -54,7 +55,7 @@ class UsersControllerTest {
         when(userMapper.toListDto(List.of(u))).thenReturn(List.of(dto));
         ResponseEntity<List<UserDto>> res = controller.listUsers(null, null, null, 0, 20);
 
-        assertEquals(200, res.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, res.getStatusCode());
         assertEquals(1, res.getBody().size());
     }
 
@@ -67,7 +68,7 @@ class UsersControllerTest {
         when(userMapper.toDto(u)).thenReturn(dto);
         ResponseEntity<UserDto> res = controller.getUser(id);
 
-        assertEquals(200, res.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, res.getStatusCode());
         assertSame(dto, res.getBody());
     }
 
@@ -79,7 +80,7 @@ class UsersControllerTest {
         req.setReason("test");
         ResponseEntity<Void> res = controller.suspendUser(id, req);
 
-        assertEquals(204, res.getStatusCodeValue());
+        assertEquals(HttpStatus.NO_CONTENT, res.getStatusCode());
     }
 
     @Test
@@ -88,7 +89,7 @@ class UsersControllerTest {
         Long adminId = 2L;
         ResponseEntity<Void> res = controller.activateUser(id, adminId);
 
-        assertEquals(204, res.getStatusCodeValue());
+        assertEquals(HttpStatus.NO_CONTENT, res.getStatusCode());
     }
 
     @Test
@@ -98,6 +99,15 @@ class UsersControllerTest {
         String reason = "bad";
         ResponseEntity<Void> res = controller.blockUser(id, adminId, reason);
 
-        assertEquals(204, res.getStatusCodeValue());
+        assertEquals(HttpStatus.NO_CONTENT, res.getStatusCode());
+    }
+
+    @Test
+    void shouldBlockUser_withNullReason_usesDefaultReason() {
+        Long id = 14L;
+        Long adminId = 3L;
+        ResponseEntity<Void> res = controller.blockUser(id, adminId, null);
+        assertEquals(HttpStatus.NO_CONTENT, res.getStatusCode());
+        verify(blockUserUseCase, times(1)).blockUser(id, adminId, "blocked_by_admin");
     }
 }

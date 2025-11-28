@@ -48,7 +48,7 @@ class DriverServiceTest {
         List<Driver> res = service.listDrivers(null, "rob", 0, 10);
         assertNotNull(res);
         assertEquals(2, res.size());
-        assertTrue(res.stream().anyMatch(d -> Long.valueOf(1L).equals(d.getDriverId())));;
+        assertTrue(res.stream().anyMatch(d -> Long.valueOf(1L).equals(d.getDriverId())));
     }
 
     @Test
@@ -83,8 +83,11 @@ class DriverServiceTest {
 
     @Test
     void shouldThrowWhenDriverNotFound() {
-        when(driverRepo.findById(Long.valueOf(99L))).thenReturn(Optional.empty());
-        DriverNotFoundException ex = assertThrows(DriverNotFoundException.class, () -> service.getDriver(Long.valueOf(99L)));
+        Long id = 99L;
+        when(driverRepo.findById(id)).thenReturn(Optional.empty());
+
+        DriverNotFoundException ex = assertThrows(DriverNotFoundException.class,
+                () -> service.getDriver(id));
         assertTrue(ex.getMessage().contains("Driver not found"));
     }
 
@@ -182,5 +185,41 @@ class DriverServiceTest {
         assertEquals(type, dde.getType());
         assertEquals(uploadedBy, dde.getUploadedBy());
         assertNotNull(dde.getUploadedAt());
+    }
+
+    @Test
+    void shouldSearchByName_whenSearchProvided() {
+        Driver d = new Driver();
+        d.setDriverId(1L);
+        when(driverRepo.searchByName("rob")).thenReturn(List.of(d));
+        var res = service.listDrivers(null, "rob", 0, 10);
+        assertNotNull(res);
+        assertEquals(1, res.size());
+        assertSame(d, res.get(0));
+        verify(driverRepo, times(1)).searchByName("rob");
+        verify(driverRepo, never()).findByStatus(anyString()); // search branch used
+    }
+
+    @Test
+    void shouldInitDocumentRefs_andPublishEvent_whenAddingDocumentRefAndWasNull() {
+        Driver d = new Driver();
+        d.setDriverId(2L);
+        d.setDocumentRefs(null);
+        when(driverRepo.findById(2L)).thenReturn(Optional.of(d));
+        when(driverRepo.save(any(Driver.class))).thenAnswer(inv -> inv.getArgument(0));
+        service.addDocumentRef(2L, "file-123", "LICENSE", 99L);
+        ArgumentCaptor<Driver> cap = ArgumentCaptor.forClass(Driver.class);
+        verify(driverRepo).save(cap.capture());
+        Driver saved = cap.getValue();
+        assertNotNull(saved.getDocumentRefs());
+        assertEquals(1, saved.getDocumentRefs().size());
+        assertEquals("file-123", saved.getDocumentRefs().get(0));
+        ArgumentCaptor<DriverDocumentUploadedEvent> evCap = ArgumentCaptor.forClass(DriverDocumentUploadedEvent.class);
+        verify(eventPublisher, times(1)).publish(evCap.capture(), eq("admin.driver.document.uploaded"));
+        DriverDocumentUploadedEvent ev = evCap.getValue();
+        assertEquals(2L, ev.getDriverId());
+        assertEquals("file-123", ev.getFileId());
+        assertEquals("LICENSE", ev.getType());
+        assertEquals(99L, ev.getUploadedBy());
     }
 }

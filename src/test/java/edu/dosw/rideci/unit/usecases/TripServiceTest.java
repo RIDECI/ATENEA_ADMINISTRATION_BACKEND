@@ -5,14 +5,13 @@ import edu.dosw.rideci.application.port.out.TripRepositoryPort;
 import edu.dosw.rideci.application.service.TripService;
 import edu.dosw.rideci.domain.model.TripMonitor;
 import edu.dosw.rideci.domain.model.enums.TripStatus;
-import edu.dosw.rideci.infrastructure.controller.dto.Response.TripListItemDto;
-import edu.dosw.rideci.infrastructure.controller.dto.Response.TripDetailDto;
-import edu.dosw.rideci.infrastructure.controller.dto.Response.DashboardResponse;
+import edu.dosw.rideci.infrastructure.controller.dto.response.TripListItemDto;
+import edu.dosw.rideci.infrastructure.controller.dto.response.TripDetailDto;
+import edu.dosw.rideci.infrastructure.controller.dto.response.DashboardResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -84,7 +83,6 @@ class TripServiceTest {
 
     @Test
     void shouldGetMetrics() {
-        LocalDateTime startOfDay = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
         when(tripRepo.countByStartTimeBetween(any(), any())).thenReturn(5L);
         when(tripRepo.countByStatus(TripStatus.IN_PROGRESS)).thenReturn(2L);
         when(tripRepo.sumIncomeBetween(any(), any())).thenReturn(123.45);
@@ -96,5 +94,45 @@ class TripServiceTest {
         assertEquals(2, resp.getTripsInProgress());
         assertEquals(123.45, resp.getIncome());
         assertEquals(7.89, resp.getCo2Reduced());
+    }
+
+    @Test
+    void shouldReturnEmpty_whenStatusIsInvalid() {
+        String invalidStatus = "not_a_status";
+        var res = service.listTrips(null, invalidStatus, null, 0, 10);
+        assertNotNull(res);
+        assertTrue(res.isEmpty());
+        verify(tripRepo, never()).findByStatus(any());
+        verify(tripRepo, never()).findAllPaged(anyInt(), anyInt());
+    }
+
+    @Test
+    void shouldReturnMappedList_whenStatusProvided() {
+        TripMonitor t = new TripMonitor(); // simple stub object
+        List<TripMonitor> monitors = List.of(t);
+        TripListItemDto dto = new TripListItemDto();
+        List<TripListItemDto> mapped = List.of(dto);
+        when(tripRepo.findByStatus(TripStatus.IN_PROGRESS)).thenReturn(monitors);
+        when(mapper.toListItems(monitors)).thenReturn(mapped);
+        var res = service.listTrips(null, "in_progress", null, 0, 10);
+        assertSame(mapped, res);
+        verify(tripRepo, times(1)).findByStatus(TripStatus.IN_PROGRESS);
+        verify(mapper, times(1)).toListItems(monitors);
+        verify(tripRepo, never()).findAllPaged(anyInt(), anyInt());
+    }
+
+    @Test
+    void shouldReturnPagedMapping_whenNoStatus() {
+        TripMonitor t = new TripMonitor();
+        List<TripMonitor> page = List.of(t);
+        TripListItemDto dto = new TripListItemDto();
+        List<TripListItemDto> mapped = List.of(dto);
+        when(tripRepo.findAllPaged(0, 20)).thenReturn(page);
+        when(mapper.toListItems(page)).thenReturn(mapped);
+        var res = service.listTrips(null, null, null, 0, 20);
+
+        assertSame(mapped, res);
+        verify(tripRepo, times(1)).findAllPaged(0, 20);
+        verify(mapper, times(1)).toListItems(page);
     }
 }

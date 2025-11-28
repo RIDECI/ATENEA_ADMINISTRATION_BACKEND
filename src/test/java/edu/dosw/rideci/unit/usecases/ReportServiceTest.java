@@ -1,13 +1,17 @@
 package edu.dosw.rideci.unit.usecases;
 
+import com.lowagie.text.DocumentException;
 import edu.dosw.rideci.application.service.ReportService;
 import edu.dosw.rideci.application.port.out.SecurityReportRepositoryPort;
 import edu.dosw.rideci.domain.model.ExportedReport;
 import edu.dosw.rideci.domain.model.SecurityReport;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -125,5 +129,50 @@ class ReportServiceTest {
         ExportedReport xlsx = service.exportReportsAs(null, List.of(r));
         assertEquals("reports.xlsx", xlsx.filename());
         assertTrue(xlsx.content().length > 0);
+    }
+
+    @Test
+    void shouldExportXlsxWhenWorkbookWriteFailsThrowsReportExportException() {
+        ReportService svc = new ReportService(reportRepo) {
+            @Override
+            protected Workbook createWorkbook() {
+                Workbook mockW = mock(Workbook.class);
+                try {
+                    doThrow(new IOException("simulated IO error")).when(mockW).write(any(ByteArrayOutputStream.class));
+                } catch (IOException ex) {
+                    // ignored, Sonar-compliant: configuring mock behavior
+                }
+                return mockW;
+            }
+        };
+
+        SecurityReport r = SecurityReport.builder().id("x1").title("t1").build();
+        assertThrows(edu.dosw.rideci.application.exceptions.ReportExportException.class,
+                () -> svc.exportReportsToXlsx(List.of(r)));
+    }
+
+    @Test
+    void shouldExportPdfWhenPdfWriterCreationFailsThrowsReportExportException() {
+        ReportService svc = new ReportService(reportRepo) {
+            @Override
+            protected com.lowagie.text.pdf.PdfWriter createPdfWriter(com.lowagie.text.Document document, ByteArrayOutputStream out) throws DocumentException {
+                throw new DocumentException("simulated pdf error");
+            }
+        };
+
+        SecurityReport r = SecurityReport.builder().id("p1").title("t1").build();
+        assertThrows(edu.dosw.rideci.application.exceptions.ReportExportException.class,
+                () -> svc.exportReportsToPdf(List.of(r)));
+    }
+
+    @Test
+    void shouldExportReportsToExcelBytesDelegatesToXlsx() {
+        ReportService spy = Mockito.spy(service);
+        SecurityReport r = SecurityReport.builder().id("e1").title("t-e").build();
+        byte[] fake = "abc".getBytes();
+        Mockito.doReturn(fake).when(spy).exportReportsToXlsx(anyList());
+        byte[] result = spy.exportReportsToExcelBytes(List.of(r));
+        assertArrayEquals(fake, result);
+        Mockito.verify(spy).exportReportsToXlsx(anyList());
     }
 }

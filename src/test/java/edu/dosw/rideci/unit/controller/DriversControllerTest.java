@@ -5,14 +5,15 @@ import edu.dosw.rideci.application.port.in.GetDriversUseCase;
 import edu.dosw.rideci.application.service.DriverService;
 import edu.dosw.rideci.domain.model.Driver;
 import edu.dosw.rideci.infrastructure.controller.DriversController;
-import edu.dosw.rideci.infrastructure.controller.dto.Request.DocumentRefDto;
-import edu.dosw.rideci.infrastructure.controller.dto.Request.RejectDto;
-import edu.dosw.rideci.infrastructure.controller.dto.Response.DriverDto;
+import edu.dosw.rideci.infrastructure.controller.dto.request.DocumentRefDto;
+import edu.dosw.rideci.infrastructure.controller.dto.request.RejectDto;
+import edu.dosw.rideci.infrastructure.controller.dto.response.DriverDto;
 import edu.dosw.rideci.application.mapper.DriverMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -42,15 +43,16 @@ class DriversControllerTest {
         MockitoAnnotations.openMocks(this);
     }
 
+
     @Test
     void shouldListDrivers() {
         Driver d = Driver.builder().driverId(1L).name("Robinson").status("PENDING").build();
         DriverDto dto = new DriverDto();
         when(getDriversUseCase.listDrivers(null, null, 0, 20)).thenReturn(List.of(d));
-        when(driverMapper.toListDto(List.of(d))).thenReturn(List.of(dto));
+        when(driverMapper.toListDto(anyList())).thenReturn(List.of(dto));
         ResponseEntity<List<DriverDto>> res = controller.listDrivers(null, null, 0, 20);
 
-        assertEquals(200, res.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, res.getStatusCode());
         assertEquals(1, res.getBody().size());
     }
 
@@ -60,7 +62,7 @@ class DriversControllerTest {
         Long adminId = 2L;
         ResponseEntity<Void> res = controller.approve(id, adminId);
 
-        assertEquals(204, res.getStatusCodeValue());
+        assertEquals(HttpStatus.NO_CONTENT, res.getStatusCode());
     }
 
     @Test
@@ -71,7 +73,7 @@ class DriversControllerTest {
         dto.setReason("bad docs");
         ResponseEntity<Void> res = controller.reject(id, dto);
 
-        assertEquals(204, res.getStatusCodeValue());
+        assertEquals(HttpStatus.NO_CONTENT, res.getStatusCode());
     }
 
     @Test
@@ -80,10 +82,10 @@ class DriversControllerTest {
         Driver d = Driver.builder().driverId(id).name("X").build();
         DriverDto dto = new DriverDto();
         when(getDriversUseCase.getDriver(id)).thenReturn(d);
-        when(driverMapper.toDto(d)).thenReturn(dto);
+        when(driverMapper.toDto(any())).thenReturn(dto);
         ResponseEntity<DriverDto> res = controller.getDriver(id);
 
-        assertEquals(200, res.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, res.getStatusCode());
         assertSame(dto, res.getBody());
     }
 
@@ -95,6 +97,6 @@ class DriversControllerTest {
         dto.setType("LICENSE");
         ResponseEntity<Void> res = controller.addDocumentRef(id, dto, 11L);
 
-        assertEquals(204, res.getStatusCodeValue());
+        assertEquals(HttpStatus.NO_CONTENT, res.getStatusCode());
     }
 }

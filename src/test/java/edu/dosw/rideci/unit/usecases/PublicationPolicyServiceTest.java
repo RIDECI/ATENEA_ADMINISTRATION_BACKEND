@@ -7,13 +7,17 @@ import edu.dosw.rideci.application.service.PublicationPolicyService;
 import edu.dosw.rideci.application.service.AdminActionService;
 import edu.dosw.rideci.application.port.out.EventPublisher;
 import edu.dosw.rideci.application.port.out.PublicationPolicyRepositoryPort;
+import edu.dosw.rideci.domain.model.PolicyStrategyContext;
+import edu.dosw.rideci.domain.model.PolicyStrategyFactory;
 import edu.dosw.rideci.domain.model.PublicationPolicy;
-import edu.dosw.rideci.infrastructure.persistence.Entity.PublicationPolicyDocument;
-import edu.dosw.rideci.infrastructure.persistence.Repository.mapper.PublicationPolicyMapper;
+import edu.dosw.rideci.infrastructure.persistence.entity.PublicationPolicyDocument;
+import edu.dosw.rideci.infrastructure.persistence.repository.mapper.PublicationPolicyMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -160,9 +164,13 @@ class PublicationPolicyServiceTest {
     @Test
     void shouldThrowWhenUpdatePolicyNotFound() {
         String id = "nope";
+        PublicationPolicy payload = PublicationPolicy.builder().build();
+
         when(repo.findById(id)).thenReturn(Optional.empty());
 
-        assertThrows(NoSuchElementException.class, () -> service.updatePolicy(id, PublicationPolicy.builder().build()));
+        assertThrows(NoSuchElementException.class,
+                () -> service.updatePolicy(id, payload));
+
         verify(repo, times(1)).findById(id);
         verify(repo, never()).save(any());
         verify(eventPublisher, never()).publish(any(), anyString());
@@ -240,4 +248,117 @@ class PublicationPolicyServiceTest {
         assertFalse(service.isAllowedAt(null));
         verify(repo, times(2)).findAll();
     }
+
+    @Test
+    void shouldCreatePolicyHandlesAdminActionException() {
+        PublicationPolicy input = PublicationPolicy.builder()
+                .name("n").startTime(LocalTime.of(7,0)).endTime(LocalTime.of(8,0)).enabled(true).build();
+        PublicationPolicyDocument docBefore = PublicationPolicyDocument.builder().id(null).name(input.getName()).build();
+        PublicationPolicyDocument savedDoc = PublicationPolicyDocument.builder().id("id1").name(input.getName()).build();
+        when(mapper.toDocument(input)).thenReturn(docBefore);
+        when(repo.save(docBefore)).thenReturn(savedDoc);
+        when(mapper.toDomain(savedDoc)).thenReturn(PublicationPolicy.builder().id("id1").name(input.getName()).build());
+        doThrow(new RuntimeException("boom audit")).when(adminActionService).recordAction(any(), anyString(), anyString(), anyString(), anyString());
+        doNothing().when(eventPublisher).publish(any(), anyString());
+
+        var res = service.createPolicy(input);
+        assertNotNull(res);
+        verify(eventPublisher, times(1)).publish(any(), eq("admin.policy.created"));
+    }
+
+    @Test
+    void shouldCreatePolicyHandlesPublishExceptionAndDoesNotPropagate() {
+        PublicationPolicy input = PublicationPolicy.builder().name("n").build();
+        PublicationPolicyDocument docBefore = PublicationPolicyDocument.builder().id(null).name(input.getName()).build();
+        PublicationPolicyDocument savedDoc = PublicationPolicyDocument.builder().id("id1").name(input.getName()).build();
+        when(mapper.toDocument(input)).thenReturn(docBefore);
+        when(repo.save(docBefore)).thenReturn(savedDoc);
+        when(mapper.toDomain(savedDoc)).thenReturn(PublicationPolicy.builder().id("id1").name(input.getName()).build());
+        doThrow(new RuntimeException("boom publish")).when(eventPublisher).publish(any(), anyString());
+
+        var res = service.createPolicy(input);
+        assertNotNull(res);
+        verify(eventPublisher, times(1)).publish(any(), eq("admin.policy.created"));
+    }
+
+
+    @Test
+    void shouldUpdateAllowedDays_whenProvided_mapsToNames() {
+        String id = "p-upd";
+        PublicationPolicyDocument existing = PublicationPolicyDocument.builder()
+                .id(id)
+                .name("old")
+                .build();
+
+        PublicationPolicy update = PublicationPolicy.builder()
+                .allowedDays(List.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY))
+                .build();
+
+        when(repo.findById(id)).thenReturn(Optional.of(existing));
+        doAnswer(inv -> inv.getArgument(0)).when(repo).save(any(PublicationPolicyDocument.class));
+        when(mapper.toDomain(any())).thenReturn(PublicationPolicy.builder().id(id).name("old").build());
+
+        PublicationPolicy result = service.updatePolicy(id, update);
+
+        ArgumentCaptor<PublicationPolicyDocument> cap = ArgumentCaptor.forClass(PublicationPolicyDocument.class);
+        verify(repo, times(1)).save(cap.capture());
+        PublicationPolicyDocument argSaved = cap.getValue();
+
+        assertNotNull(argSaved.getAllowedDays());
+        assertEquals(List.of("MONDAY", "WEDNESDAY"), argSaved.getAllowedDays());
+        assertNotNull(result);
+    }
+
+
+    @Test
+    void shouldGetPolicy_whenNotFound_throws() {
+        String id = "not-found";
+        when(repo.findById(id)).thenReturn(Optional.empty());
+        assertThrows(NoSuchElementException.class, () -> service.getPolicy(id));
+        verify(repo, times(1)).findById(id);
+    }
+
+    @Test
+    void shouldDeletePolicy_whenNotExists_publishWithNullName() {
+        String id = "del-1";
+        when(repo.findById(id)).thenReturn(Optional.empty());
+        service.deletePolicy(id);
+        verify(repo, times(1)).deleteById(id);
+        ArgumentCaptor<PublicationPolicyDeletedEvent> evCap = ArgumentCaptor.forClass(PublicationPolicyDeletedEvent.class);
+        verify(eventPublisher, times(1)).publish(evCap.capture(), eq("admin.policy.deleted"));
+        PublicationPolicyDeletedEvent ev = evCap.getValue();
+        assertNull(ev.getPolicyName());
+        verify(adminActionService, atMost(1)).recordAction(any(), anyString(), anyString(), anyString(), anyString());
+    }
+
+    @Test
+    void shouldFindMatchingPolicyCallsStrategyAndReturnsSecondWhenFirstFalse() {
+        PublicationPolicyDocument d1 = PublicationPolicyDocument.builder().id("d1").enabled(true).build();
+        PublicationPolicyDocument d2 = PublicationPolicyDocument.builder().id("d2").enabled(true).build();
+
+        PublicationPolicy p1 = PublicationPolicy.builder().id("d1").name("p1").enabled(true).build();
+        PublicationPolicy p2 = PublicationPolicy.builder().id("d2").name("p2").enabled(true).build();
+
+        when(repo.findAll()).thenReturn(List.of(d1, d2));
+        when(mapper.toDomain(d1)).thenReturn(p1);
+        when(mapper.toDomain(d2)).thenReturn(p2);
+
+        try (MockedStatic<PolicyStrategyFactory> ms = mockStatic(PolicyStrategyFactory.class)) {
+            var strat1 = mock(edu.dosw.rideci.domain.model.PolicyStrategy.class);
+            var strat2 = mock(edu.dosw.rideci.domain.model.PolicyStrategy.class);
+            ms.when(() -> PolicyStrategyFactory.of(p1)).thenReturn(strat1);
+            ms.when(() -> PolicyStrategyFactory.of(p2)).thenReturn(strat2);
+
+            when(strat1.isSatisfied(eq(p1), any(LocalDateTime.class), any())).thenReturn(false);
+            when(strat2.isSatisfied(eq(p2), any(LocalDateTime.class), any())).thenReturn(true);
+
+            var opt = service.findMatchingPolicy(LocalDateTime.now(), new PolicyStrategyContext(null, null));
+            assertTrue(opt.isPresent());
+            assertEquals("p2", opt.get().getName());
+
+            verify(strat1, times(1)).isSatisfied(eq(p1), any(LocalDateTime.class), any());
+            verify(strat2, times(1)).isSatisfied(eq(p2), any(LocalDateTime.class), any());
+        }
+    }
+
 }

@@ -209,8 +209,8 @@
                                 <include>**/infrastructure/controller/**</include>
                             </includes>
                             <excludes>
-                                <exclude>**/infrastructure/controller/dto/Request/**</exclude>
-                                <exclude>**/infrastructure/controller/dto/Response/**</exclude>
+                                <exclude>**/infrastructure/controller/dto/request/**</exclude>
+                                <exclude>**/infrastructure/controller/dto/response/**</exclude>
                                 <exclude>**/infrastructure/adapters/messaging/**</exclude>
                                 <exclude>**/AteneaAdministrationBackEndApplication.class</exclude>
                             </excludes>
@@ -239,7 +239,7 @@
                                         <limit>
                                             <counter>CLASS</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.00</minimum>
+                                            <minimum>0.50</minimum>
                                         </limit>
                                     </limits>
                                 </rule>
@@ -249,8 +249,8 @@
                                 <include>**/infrastructure/controller/**</include>
                             </includes>
                             <excludes>
-                                <exclude>**/infrastructure/controller/dto/Request/**</exclude>
-                                <exclude>**/infrastructure/controller/dto/Response/**</exclude>
+                                <exclude>**/infrastructure/controller/dto/request/**</exclude>
+                                <exclude>**/infrastructure/controller/dto/response/**</exclude>
                                 <exclude>**/infrastructure/adapters/messaging/**</exclude>
                                 <exclude>**/AteneaAdministrationBackEndApplication.class</exclude>
                             </excludes>

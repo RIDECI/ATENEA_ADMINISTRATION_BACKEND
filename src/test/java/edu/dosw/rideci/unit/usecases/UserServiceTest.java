@@ -5,7 +5,7 @@ import edu.dosw.rideci.application.service.AdminActionService;
 import edu.dosw.rideci.application.port.out.UserRepositoryPort;
 import edu.dosw.rideci.application.port.out.EventPublisher;
 import edu.dosw.rideci.domain.model.User;
-import edu.dosw.rideci.infrastructure.controller.dto.Request.SuspendUserRequestDto;
+import edu.dosw.rideci.infrastructure.controller.dto.request.SuspendUserRequestDto;
 import edu.dosw.rideci.application.events.UserSuspendedEvent;
 import edu.dosw.rideci.application.events.UserActivatedEvent;
 import edu.dosw.rideci.application.events.UserBlockedEvent;
@@ -13,6 +13,8 @@ import edu.dosw.rideci.application.exceptions.UserNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -185,5 +187,73 @@ class UserServiceTest {
     @Test
     void shouldThrowSuspendWhenReqNull() {
         assertThrows(IllegalArgumentException.class, () -> service.suspendUser(1L, null));
+    }
+
+    @Test
+    void shouldSuspendUserParseDatesAndPublishEvent() {
+        User u = new User();
+        u.setId(20L);
+        u.setRole("TEACHER");
+        u.setStatus("ACTIVE");
+
+        SuspendUserRequestDto req = new SuspendUserRequestDto();
+        req.setAdminId(42L);
+        req.setReason("cheating");
+        req.setStartAt("2025-01-01T10:00:00");
+        req.setEndAt("2025-01-03T18:30:00");
+
+        when(userRepo.findById(20L)).thenReturn(Optional.of(u));
+        when(userRepo.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        service.suspendUser(20L, req);
+
+        ArgumentCaptor<User> cap = ArgumentCaptor.forClass(User.class);
+        verify(userRepo).save(cap.capture());
+        User saved = cap.getValue();
+        assertEquals("SUSPENDED", saved.getStatus());
+        assertEquals("STUDENT, ADMIN", saved.getRole());
+
+        ArgumentCaptor<UserSuspendedEvent> evCap = ArgumentCaptor.forClass(UserSuspendedEvent.class);
+        verify(eventPublisher).publish(evCap.capture(), eq("admin.user.suspended"));
+        UserSuspendedEvent ev = evCap.getValue();
+        assertEquals(LocalDateTime.parse("2025-01-01T10:00:00"), ev.getStartDate());
+        assertEquals(LocalDateTime.parse("2025-01-03T18:30:00"), ev.getEndDate());
+    }
+
+    @Test
+    void shouldSuspendUserDoesNotSetPreviousRole() {
+        User u = new User();
+        u.setId(21L);
+        u.setRole(null);
+        u.setStatus("ACTIVE");
+        SuspendUserRequestDto req = new SuspendUserRequestDto();
+        req.setAdminId(77L);
+        req.setReason("x");
+        when(userRepo.findById(21L)).thenReturn(Optional.of(u));
+        when(userRepo.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+        service.suspendUser(21L, req);
+        ArgumentCaptor<User> cap = ArgumentCaptor.forClass(User.class);
+        verify(userRepo).save(cap.capture());
+        User saved = cap.getValue();
+        assertNull(saved.getPreviousRole(), "previousRole must remain null when original role is null");
+        assertEquals("SUSPENDED", saved.getStatus());
+    }
+
+    @Test
+    void shouldBlockUserUsesDefaultReason() {
+        User u = new User();
+        u.setId(33L);
+        u.setRole("STUDENT");
+        u.setStatus("ACTIVE");
+        when(userRepo.findById(33L)).thenReturn(Optional.of(u));
+        when(userRepo.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+        service.blockUser(33L, 300L, null);
+        ArgumentCaptor<User> cap = ArgumentCaptor.forClass(User.class);
+        verify(userRepo).save(cap.capture());
+        User saved = cap.getValue();
+        assertEquals("BLOCKED", saved.getStatus());
+        verify(adminActionService, times(1))
+                .recordAction(eq(300L), eq("BLOCK_USER"), eq("USER"), anyString(), eq("blocked_by_admin"));
+        verify(eventPublisher, times(1)).publish(any(UserBlockedEvent.class), eq("admin.user.blocked"));
     }
 }
