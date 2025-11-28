@@ -16,7 +16,7 @@ import edu.dosw.rideci.infrastructure.controller.dto.Response.TripDetailDto;
  */
 @Mapper(componentModel = "spring")
 public interface TripMapper {
-    TripMapper INSTANCE = Mappers.getMapper(TripMapper.class);
+
     /**
      * Convierte entidad TripMonitor a TripListItemDto
      *

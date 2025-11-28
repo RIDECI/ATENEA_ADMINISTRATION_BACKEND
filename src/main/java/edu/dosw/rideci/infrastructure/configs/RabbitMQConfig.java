@@ -34,17 +34,50 @@ public class RabbitMQConfig {
     // Viajes
     public static final String TRIP_EXCHANGE = "travel.exchange";
     public static final String TRIP_CREATED_ROUTING_KEY = "travel.created";
-    public static final String TRIP_CREATED_QUEUE = "security.travel.created.queue";
+    public static final String TRIP_CREATED_QUEUE = "travel.created.queue";
 
     public static final String TRIP_FINISHED_ROUTING_KEY = "travel.completed";
-    public static final String TRIP_FINISHED_QUEUE = "security.travel.completed.queue";
+    public static final String TRIP_FINISHED_QUEUE = "travel.completed.queue";
 
-    // Mensajes del chat
-    public static final String CHAT_EXCHANGE = "rideci.chat.exchange";
-    public static final String CHAT_ROUTING_KEY = "chat.message";
-    public static final String CHAT_QUEUE = "rideci.chat.queue";
+    // Usuario
+    public static final String EXCHANGE_USER = "user.exchange";
+    public static final String USER_CREATED_QUEUE = "user.sync.queue";
+    public static final String USER_ROUTING_KEY = "user.#";
 
+    //Perfiles
+    public static final String EXCHANGE_PROFILE = "profile.exchange";
+    public static final String PROFILE_CREATED_QUEUE = "profile.sync.queue";
+    public static final String PROFILE_ROUTING_KEY = "profile.created";
 
+    @Bean
+    public Queue userCreatedQueue() {
+        return QueueBuilder.durable(USER_CREATED_QUEUE).build();
+    }
+
+    @Bean
+    public TopicExchange userExchange() {
+        return ExchangeBuilder.topicExchange(EXCHANGE_USER).durable(true).build();
+    }
+
+    @Bean
+    public Binding bindUserCreated(Queue userCreatedQueue, TopicExchange userExchange) {
+        return BindingBuilder.bind(userCreatedQueue).to(userExchange).with(USER_ROUTING_KEY);
+    }
+
+    @Bean
+    public Queue profileCreatedQueue() {
+        return QueueBuilder.durable(PROFILE_CREATED_QUEUE).build();
+    }
+
+    @Bean
+    public TopicExchange profileExchange() {
+        return ExchangeBuilder.topicExchange(EXCHANGE_PROFILE).durable(true).build();
+    }
+
+    @Bean
+    public Binding bindProfileCreated(Queue profileCreatedQueue, TopicExchange profileExchange) {
+        return BindingBuilder.bind(profileCreatedQueue).to(profileExchange).with(PROFILE_ROUTING_KEY);
+    }
 
     @Bean
     public TopicExchange tripExchange() {
@@ -153,21 +186,6 @@ public class RabbitMQConfig {
     }
 
 
-    @Bean
-    public TopicExchange chatExchange() {
-        return ExchangeBuilder.topicExchange(CHAT_EXCHANGE).durable(true).build();
-    }
-
-    @Bean
-    public Queue chatQueue() {
-        return QueueBuilder.durable(CHAT_QUEUE).build();
-    }
-
-    @Bean
-    public Binding chatBinding(@Qualifier("chatQueue") Queue chatQueue,
-                               @Qualifier("chatExchange") TopicExchange chatExchange) {
-        return BindingBuilder.bind(chatQueue).to(chatExchange).with(CHAT_ROUTING_KEY);
-    }
 
     /**
      * Configura el convertidor JSON para RabbitMQ
