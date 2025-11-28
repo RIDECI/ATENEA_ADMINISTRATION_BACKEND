@@ -1,5 +1,6 @@
 package edu.dosw.rideci.application.events.command;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.dosw.rideci.domain.model.enums.Status;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,6 +19,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class TravelCompletedCommand {
+    @JsonProperty("id")
     private Long travelId;
     private Status state;
 }

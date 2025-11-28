@@ -9,7 +9,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import edu.dosw.rideci.application.service.ReportService;
 import edu.dosw.rideci.domain.model.SecurityReport;
 
 import java.time.LocalDateTime;

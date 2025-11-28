@@ -14,4 +14,13 @@ public interface EventPublisher {
      * @param routingKey Clave de enrutamiento
      */
     void publish(Object event, String routingKey);
+
+    /**
+     * Publica un evento en el exchange y routingKey especificados.
+     *
+     * @param event Evento a publicar
+     * @param exchange Exchange destino
+     * @param routingKey Clave de enrutamiento
+     */
+    void publish(Object event, String exchange, String routingKey);
 }

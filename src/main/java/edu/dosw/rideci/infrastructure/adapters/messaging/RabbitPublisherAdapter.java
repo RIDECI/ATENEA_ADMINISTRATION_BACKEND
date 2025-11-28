@@ -26,4 +26,9 @@ public class RabbitPublisherAdapter implements EventPublisher {
     public void publish(Object event, String routingKey) {
         rabbitTemplate.convertAndSend("admin.exchange", routingKey, event);
     }
+
+    @Override
+    public void publish(Object event, String exchange, String routingKey) {
+        rabbitTemplate.convertAndSend(exchange, routingKey, event);
+    }
 }

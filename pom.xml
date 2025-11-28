@@ -37,11 +37,20 @@
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
         </dependency>
 
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.34</version>
-            <optional>true</optional>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Lambok y mapstruct -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok-mapstruct-binding</artifactId>
+            <version>0.2.0</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -200,8 +209,8 @@
                                 <include>**/infrastructure/controller/**</include>
                             </includes>
                             <excludes>
-                                <exclude>**/infrastructure/controller/dto/Request/**</exclude>
-                                <exclude>**/infrastructure/controller/dto/Response/**</exclude>
+                                <exclude>**/infrastructure/controller/dto/request/**</exclude>
+                                <exclude>**/infrastructure/controller/dto/response/**</exclude>
                                 <exclude>**/infrastructure/adapters/messaging/**</exclude>
                                 <exclude>**/AteneaAdministrationBackEndApplication.class</exclude>
                             </excludes>
@@ -230,7 +239,7 @@
                                         <limit>
                                             <counter>CLASS</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.00</minimum>
+                                            <minimum>0.50</minimum>
                                         </limit>
                                     </limits>
                                 </rule>
@@ -240,8 +249,8 @@
                                 <include>**/infrastructure/controller/**</include>
                             </includes>
                             <excludes>
-                                <exclude>**/infrastructure/controller/dto/Request/**</exclude>
-                                <exclude>**/infrastructure/controller/dto/Response/**</exclude>
+                                <exclude>**/infrastructure/controller/dto/request/**</exclude>
+                                <exclude>**/infrastructure/controller/dto/response/**</exclude>
                                 <exclude>**/infrastructure/adapters/messaging/**</exclude>
                                 <exclude>**/AteneaAdministrationBackEndApplication.class</exclude>
                             </excludes>

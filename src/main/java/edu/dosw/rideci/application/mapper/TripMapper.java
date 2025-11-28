@@ -1,12 +1,11 @@
 package edu.dosw.rideci.application.mapper;
 
 import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
 import java.util.List;
 
 import edu.dosw.rideci.domain.model.TripMonitor;
-import edu.dosw.rideci.infrastructure.controller.dto.Response.TripListItemDto;
-import edu.dosw.rideci.infrastructure.controller.dto.Response.TripDetailDto;
+import edu.dosw.rideci.infrastructure.controller.dto.response.TripListItemDto;
+import edu.dosw.rideci.infrastructure.controller.dto.response.TripDetailDto;
 
 /**
  * Mapper para conversión entre entidades TripMonitor y DTOs en RideECI
@@ -16,7 +15,7 @@ import edu.dosw.rideci.infrastructure.controller.dto.Response.TripDetailDto;
  */
 @Mapper(componentModel = "spring")
 public interface TripMapper {
-    TripMapper INSTANCE = Mappers.getMapper(TripMapper.class);
+
     /**
      * Convierte entidad TripMonitor a TripListItemDto
      *

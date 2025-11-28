@@ -1,10 +1,9 @@
 package edu.dosw.rideci.infrastructure.controller;
 
 import edu.dosw.rideci.application.port.in.*;
-import edu.dosw.rideci.application.port.in.*;
 import edu.dosw.rideci.application.mapper.UserMapper;
-import edu.dosw.rideci.infrastructure.controller.dto.Request.SuspendUserRequestDto;
-import edu.dosw.rideci.infrastructure.controller.dto.Response.UserDto;
+import edu.dosw.rideci.infrastructure.controller.dto.request.SuspendUserRequestDto;
+import edu.dosw.rideci.infrastructure.controller.dto.response.UserDto;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

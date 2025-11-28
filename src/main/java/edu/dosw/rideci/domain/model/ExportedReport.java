@@ -7,22 +7,13 @@ import java.util.Objects;
  * Contenedor inmutable para resultado de exportación.
  * hace copia defensiva del arreglo de bytes en constructor.
  */
-public final class ExportedReport {
-    private final byte[] content;
-    private final String filename;
-    private final String mediaType;
+public record ExportedReport(byte[] content, String filename, String mediaType) {
 
     /**
-     * Record que representa un reporte exportado con su contenido y metadatos
-     *
-     * @param content Bytes del contenido del archivo
-     * @param filename Nombre del archivo generado
-     * @param mediaType Tipo MIME del archivo
+     * Realiza copia defensiva del array de bytes.
      */
-    public ExportedReport(byte[] content, String filename, String mediaType) {
-        this.content = content == null ? new byte[0] : Arrays.copyOf(content, content.length);
-        this.filename = filename;
-        this.mediaType = mediaType;
+    public ExportedReport {
+        content = content == null ? new byte[0] : content.clone();
     }
 
     /**
@@ -30,26 +21,9 @@ public final class ExportedReport {
      *
      * @return Copia del array de bytes del contenido
      */
+    @Override
     public byte[] content() {
-        return Arrays.copyOf(content, content.length);
-    }
-
-    /**
-     * Retorna el nombre del archivo generado
-     *
-     * @return Nombre del archivo
-     */
-    public String filename() {
-        return filename;
-    }
-
-    /**
-     * Retorna el tipo MIME del archivo
-     *
-     * @return Tipo MIME como "application/pdf", "text/csv"
-     */
-    public String mediaType() {
-        return mediaType;
+        return content.clone();
     }
 
     /**
@@ -61,11 +35,10 @@ public final class ExportedReport {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ExportedReport)) return false;
-        ExportedReport that = (ExportedReport) o;
-        return Arrays.equals(content, that.content)
-                && Objects.equals(filename, that.filename)
-                && Objects.equals(mediaType, that.mediaType);
+        if (!(o instanceof ExportedReport other)) return false;
+        return Arrays.equals(this.content, other.content)
+                && Objects.equals(this.filename, other.filename)
+                && Objects.equals(this.mediaType, other.mediaType);
     }
 
     /**

@@ -1,8 +1,8 @@
 package edu.dosw.rideci.application.port.in;
 
-import edu.dosw.rideci.infrastructure.controller.dto.Response.TripListItemDto;
-import edu.dosw.rideci.infrastructure.controller.dto.Response.TripDetailDto;
-import edu.dosw.rideci.infrastructure.controller.dto.Response.DashboardResponse;
+import edu.dosw.rideci.infrastructure.controller.dto.response.TripListItemDto;
+import edu.dosw.rideci.infrastructure.controller.dto.response.TripDetailDto;
+import edu.dosw.rideci.infrastructure.controller.dto.response.DashboardResponse;
 import java.util.List;
 
 /**

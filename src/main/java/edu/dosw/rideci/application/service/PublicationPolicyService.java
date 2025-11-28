@@ -9,8 +9,8 @@ import edu.dosw.rideci.application.port.out.PublicationPolicyRepositoryPort;
 import edu.dosw.rideci.domain.model.PublicationPolicy;
 import edu.dosw.rideci.domain.model.PolicyStrategyContext;
 import edu.dosw.rideci.domain.model.PolicyStrategyFactory;
-import edu.dosw.rideci.infrastructure.persistence.Entity.PublicationPolicyDocument;
-import edu.dosw.rideci.infrastructure.persistence.Repository.mapper.PublicationPolicyMapper;
+import edu.dosw.rideci.infrastructure.persistence.entity.PublicationPolicyDocument;
+import edu.dosw.rideci.infrastructure.persistence.repository.mapper.PublicationPolicyMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.stream.Collectors;
+
 
 /**
  * Servicio para gestión de políticas de publicación en RideECI
@@ -34,6 +34,8 @@ public class PublicationPolicyService implements PublicationPolicyUseCase {
     private final PublicationPolicyMapper mapper;
     private final EventPublisher eventPublisher;
     private final AdminActionService adminActionService;
+    private static final String TARGET_PUBLICATION_POLICY = "PUBLICATION_POLICY";
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(PublicationPolicyService.class);
 
     /**
      * Crea una nueva política de publicación
@@ -46,7 +48,7 @@ public class PublicationPolicyService implements PublicationPolicyUseCase {
         PublicationPolicyDocument saved = repo.save(mapper.toDocument(doc));
         PublicationPolicy domain = mapper.toDomain(saved);
 
-        safeAudit(null, "CREATE_POLICY", "PUBLICATION_POLICY", saved.getId(), "created policy: " + domain.getName());
+        safeAudit(null, "CREATE_POLICY", TARGET_PUBLICATION_POLICY, saved.getId(), "created policy: " + domain.getName());
         PublicationPolicyCreatedEvent ev = PublicationPolicyCreatedEvent.builder()
                 .policyId(saved.getId())
                 .policy(domain)
@@ -81,7 +83,7 @@ public class PublicationPolicyService implements PublicationPolicyUseCase {
         PublicationPolicyDocument saved = repo.save(existing);
         PublicationPolicy domain = mapper.toDomain(saved);
 
-        safeAudit(null, "UPDATE_POLICY", "PUBLICATION_POLICY", saved.getId(), "updated policy: " + domain.getName());
+        safeAudit(null, "UPDATE_POLICY", TARGET_PUBLICATION_POLICY, saved.getId(), "updated policy: " + domain.getName());
 
         PublicationPolicyUpdatedEvent ev = PublicationPolicyUpdatedEvent.builder()
                 .policyId(saved.getId())
@@ -114,7 +116,9 @@ public class PublicationPolicyService implements PublicationPolicyUseCase {
      */
     @Override
     public List<PublicationPolicy> listPolicies() {
-        return repo.findAll().stream().map(mapper::toDomain).collect(Collectors.toList());
+        return repo.findAll().stream()
+                .map(mapper::toDomain)
+                .toList();
     }
 
     /**
@@ -129,7 +133,7 @@ public class PublicationPolicyService implements PublicationPolicyUseCase {
 
         repo.deleteById(id);
 
-        safeAudit(null, "DELETE_POLICY", "PUBLICATION_POLICY", id, "deleted policy: " + (name == null ? id : name));
+        safeAudit(null, "DELETE_POLICY", TARGET_PUBLICATION_POLICY, id, "deleted policy: " + (name == null ? id : name));
 
         PublicationPolicyDeletedEvent ev = PublicationPolicyDeletedEvent.builder()
                 .policyId(id)
@@ -195,7 +199,8 @@ public class PublicationPolicyService implements PublicationPolicyUseCase {
     private void safeAudit(Long adminId, String action, String targetType, String targetId, String details) {
         try {
             adminActionService.recordAction(adminId, action, targetType, targetId, details);
-        } catch (Exception ignored) {
+        } catch (Exception ex) {
+            LOG.debug("safeAudit failed for targetType={} targetId={}: {}", targetType, targetId, ex.getMessage(), ex);
         }
     }
 
@@ -207,7 +212,8 @@ public class PublicationPolicyService implements PublicationPolicyUseCase {
     private void safePublish(Object event, String routingKey) {
         try {
             eventPublisher.publish(event, routingKey);
-        } catch (Exception ignored) {
+        } catch (Exception ex) {
+            LOG.debug("safePublish failed routingKey={}: {}", routingKey, ex.getMessage(), ex);
         }
     }
 }

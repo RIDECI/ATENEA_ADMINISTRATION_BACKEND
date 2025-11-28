@@ -1,6 +1,6 @@
 package edu.dosw.rideci.application.port.in;
 
-import edu.dosw.rideci.infrastructure.controller.dto.Request.SuspendUserRequestDto;
+import edu.dosw.rideci.infrastructure.controller.dto.request.SuspendUserRequestDto;
 
 /**
  * Caso de uso para suspensión de usuarios en RideECI

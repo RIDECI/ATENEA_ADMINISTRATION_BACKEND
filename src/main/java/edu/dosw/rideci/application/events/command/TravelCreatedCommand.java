@@ -3,6 +3,7 @@ package edu.dosw.rideci.application.events.command;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.dosw.rideci.domain.model.valueobjects.Location;
 import edu.dosw.rideci.domain.model.enums.Status;
 import edu.dosw.rideci.domain.model.enums.TravelType;
@@ -24,7 +25,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class TravelCreatedCommand {
 
+    @JsonProperty("id")
     private Long travelId;
+
     private Long driverId;
     private Status state;
     private Location origin;
@@ -32,8 +35,7 @@ public class TravelCreatedCommand {
     private List<Long> passengersId;
     private TravelType travelType;
     private LocalDateTime departureDateAndTime;
-
-    //Faltarian
+    private String conditions;
     private Double estimatedCost;
     private Double co2Saved;
 }

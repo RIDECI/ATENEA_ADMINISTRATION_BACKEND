@@ -1,6 +1,6 @@
 package edu.dosw.rideci.application.port.out;
 
-import edu.dosw.rideci.infrastructure.persistence.Entity.PublicationPolicyDocument;
+import edu.dosw.rideci.infrastructure.persistence.entity.PublicationPolicyDocument;
 
 import java.util.List;
 import java.util.Optional;

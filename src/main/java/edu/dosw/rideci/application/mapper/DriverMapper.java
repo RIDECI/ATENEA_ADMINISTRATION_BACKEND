@@ -6,7 +6,7 @@ import org.mapstruct.factory.Mappers;
 import java.util.List;
 
 import edu.dosw.rideci.domain.model.Driver;
-import edu.dosw.rideci.infrastructure.controller.dto.Response.DriverDto;
+import edu.dosw.rideci.infrastructure.controller.dto.response.DriverDto;
 
 /**
  * Mapper para conversión entre entidades Driver y DTOs en RideECI

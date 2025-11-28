@@ -4,8 +4,8 @@ import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
 
 import edu.dosw.rideci.application.port.out.UserRepositoryPort;
-import edu.dosw.rideci.infrastructure.persistence.Repository.UserMongoRepository;
-import edu.dosw.rideci.infrastructure.persistence.Repository.mapper.UserDocumentMapper;
+import edu.dosw.rideci.infrastructure.persistence.repository.UserMongoRepository;
+import edu.dosw.rideci.infrastructure.persistence.repository.mapper.UserDocumentMapper;
 import edu.dosw.rideci.domain.model.User;
 
 import java.util.List;

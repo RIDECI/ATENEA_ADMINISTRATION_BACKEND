@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service;
 import edu.dosw.rideci.application.port.out.TripRepositoryPort;
 import edu.dosw.rideci.application.mapper.TripMapper;
 import edu.dosw.rideci.domain.model.TripMonitor;
-import edu.dosw.rideci.infrastructure.controller.dto.Response.TripListItemDto;
-import edu.dosw.rideci.infrastructure.controller.dto.Response.TripDetailDto;
-import edu.dosw.rideci.infrastructure.controller.dto.Response.DashboardResponse;
+import edu.dosw.rideci.infrastructure.controller.dto.response.TripListItemDto;
+import edu.dosw.rideci.infrastructure.controller.dto.response.TripDetailDto;
+import edu.dosw.rideci.infrastructure.controller.dto.response.DashboardResponse;
 import edu.dosw.rideci.domain.model.enums.TripStatus;
 
 import java.time.LocalDateTime;

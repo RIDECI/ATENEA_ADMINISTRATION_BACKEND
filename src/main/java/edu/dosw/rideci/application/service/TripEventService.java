@@ -15,6 +15,8 @@ import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+import static org.apache.xmlbeans.impl.common.XBeanDebug.LOG;
+
 /**
  * Servicio para procesamiento de eventos de viajes en RideECI
  * Maneja la creación, actualización y finalización de viajes en el sistema de monitoreo
@@ -41,13 +43,15 @@ public class TripEventService {
     @Transactional
     public void processTripCreated(TravelCreatedCommand e) {
         if (e == null || e.getTravelId() == null) {
-            System.err.println("TripEventService.processTripCreated: evento nulo o travelId nulo");
+            LOG.warn("TripEventService.processTripCreated: evento nulo o travelId nulo");
             return;
         }
 
+        LOG.debug("processTripCreated payload: {}", e);
+
         if (e.getDepartureDateAndTime() != null &&
                 e.getDepartureDateAndTime().getDayOfWeek() == DayOfWeek.SUNDAY) {
-            System.out.println("⛔ Se recibió TravelCreated con departureDate en DOMINGO. Rechazando. travelId=" + e.getTravelId());
+            LOG.info("⛔ Rechazado TravelCreated con departureDate en DOMINGO. travelId={}", e.getTravelId());
             return;
         }
 
@@ -65,6 +69,8 @@ public class TripEventService {
             existing.setPassengerIds(e.getPassengersId());
             existing.setTravelType(e.getTravelType() != null ? e.getTravelType().name() : existing.getTravelType());
             tripRepo.save(existing);
+            LOG.info("Updated TripMonitor travelId={} driverId={} status={}", id, e.getDriverId(), existing.getStatus());
+            LOG.debug("Updated TripMonitor content: {}", existing);
             return;
         }
 
@@ -80,6 +86,8 @@ public class TripEventService {
         t.setCo2Saved(Objects.requireNonNullElse(e.getCo2Saved(), 0.0));
         t.setTravelType(e.getTravelType() != null ? e.getTravelType().name() : null);
         tripRepo.save(t);
+        LOG.info("Created TripMonitor travelId={} driverId={} status={}", id, t.getDriverId(), t.getStatus());
+        LOG.debug("New TripMonitor content: {}", t);
     }
 
     /**
@@ -91,9 +99,11 @@ public class TripEventService {
     @Transactional
     public void processTripFinished(TravelCompletedCommand e) {
         if (e == null || e.getTravelId() == null) {
-            System.err.println("TripEventService.processTripFinished: evento nulo o travelId nulo");
+            LOG.warn("TripEventService.processTripFinished: evento nulo o travelId nulo");
             return;
         }
+
+        LOG.debug("processTripFinished payload: {}", e);
 
         Long id = e.getTravelId();
         TripMonitor existing = tripRepo.getTripById(id);
