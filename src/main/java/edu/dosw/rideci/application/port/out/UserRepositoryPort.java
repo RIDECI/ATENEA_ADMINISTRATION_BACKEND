@@ -69,4 +69,7 @@ public interface UserRepositoryPort {
      * @return Lista de todos los usuarios
      */
     List<User> findAll();
+
+
+    boolean updateReputationSummary(Long userId, double average, long totalRatings);
 }

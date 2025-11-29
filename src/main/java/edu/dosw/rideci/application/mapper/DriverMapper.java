@@ -16,7 +16,6 @@ import edu.dosw.rideci.infrastructure.controller.dto.response.DriverDto;
  */
 @Mapper(componentModel = "spring")
 public interface DriverMapper {
-    DriverMapper INSTANCE = Mappers.getMapper(DriverMapper.class);
     /**
      * Convierte entidad Driver a DriverDto
      *
