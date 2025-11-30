@@ -45,9 +45,15 @@ public class RabbitMQConfig {
     public static final String USER_ROUTING_KEY = "user.#";
 
     //Perfiles
-    public static final String EXCHANGE_PROFILE = "profile.exchange";
     public static final String PROFILE_CREATED_QUEUE = "profile.sync.queue";
-    public static final String PROFILE_ROUTING_KEY = "profile.created";
+    public static final String RATING_CREATED_QUEUE = "rating.sync.queue";
+    public static final String EXCHANGE_PROFILE = "profile.exchange";
+    public static final String PROFILE_CREATED_ROUTING_KEY = "profile.created";
+    public static final String RATING_CREATED_ROUTING_KEY = "rating.created";
+
+
+
+    //-----Usuarios-----
 
     @Bean
     public Queue userCreatedQueue() {
@@ -64,9 +70,16 @@ public class RabbitMQConfig {
         return BindingBuilder.bind(userCreatedQueue).to(userExchange).with(USER_ROUTING_KEY);
     }
 
+    //-----Perfiles-----
+
     @Bean
-    public Queue profileCreatedQueue() {
+    public Queue profileSyncQueue() {
         return QueueBuilder.durable(PROFILE_CREATED_QUEUE).build();
+    }
+
+    @Bean
+    public Queue ratingSyncQueue() {
+        return QueueBuilder.durable(RATING_CREATED_QUEUE).build();
     }
 
     @Bean
@@ -75,10 +88,24 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding bindProfileCreated(Queue profileCreatedQueue, TopicExchange profileExchange) {
-        return BindingBuilder.bind(profileCreatedQueue).to(profileExchange).with(PROFILE_ROUTING_KEY);
+    public Binding bindProfileCreated(@Qualifier("profileSyncQueue") Queue q,
+                                      @Qualifier("profileExchange") TopicExchange ex) {
+        return BindingBuilder.bind(q).to(ex).with(PROFILE_CREATED_ROUTING_KEY);
     }
 
+    @Bean
+    public Binding bindRatingCreatedToProfile(@Qualifier("ratingSyncQueue") Queue q,
+                                              @Qualifier("profileExchange") TopicExchange ex) {
+        return BindingBuilder.bind(q).to(ex).with(RATING_CREATED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding bindRatingToTravel(@Qualifier("ratingSyncQueue") Queue q,
+                                      @Qualifier("tripExchange") TopicExchange tripExchange) {
+        return BindingBuilder.bind(q).to(tripExchange).with(RabbitMQConfig.TRIP_FINISHED_ROUTING_KEY);
+    }
+
+    //-----Viajes-----
     @Bean
     public TopicExchange tripExchange() {
         return ExchangeBuilder.topicExchange(TRIP_EXCHANGE).durable(true).build();
@@ -106,6 +133,7 @@ public class RabbitMQConfig {
         return BindingBuilder.bind(tripFinishedQueue).to(tripExchange).with(TRIP_FINISHED_ROUTING_KEY);
     }
 
+    //-----Admin-----
     /**
      * Configura el exchange de administración
      *

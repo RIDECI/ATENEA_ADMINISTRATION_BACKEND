@@ -105,4 +105,16 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
     public List<User> findAll() {
         return repo.findAll().stream().map(mapper::toDomain).toList();
     }
+
+
+    @Override
+    public boolean updateReputationSummary(Long userId, double average, long totalRatings) {
+        if (userId == null) return false;
+        var maybeDoc = repo.findById(userId);
+        if (maybeDoc.isEmpty()) return false;
+        var doc = maybeDoc.get();
+        doc.setReputation(average);
+        repo.save(doc);
+        return true;
+    }
 }
