@@ -21,6 +21,8 @@ public interface UserDocumentMapper {
      * @param d Documento de usuario
      * @return Modelo de dominio de usuario
      */
+    @Mapping(target="suspensionCount", source="suspensionCount")
+    @Mapping(target="blocked", source="blocked")
     @Mapping(target = "status", source = "state")
     User toDomain(UserDocument d);
 
@@ -30,6 +32,8 @@ public interface UserDocumentMapper {
      * @param u Modelo de dominio de usuario
      * @return Documento de usuario
      */
+    @Mapping(target="suspensionCount", source="suspensionCount")
+    @Mapping(target="blocked", source="blocked")
     @Mapping(target = "state", source = "status")
     UserDocument toDocument(User u);
 

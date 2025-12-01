@@ -3,6 +3,13 @@ package edu.dosw.rideci.domain.model.valueobjects;
 import lombok.*;
 import java.time.LocalDateTime;
 
+/**
+ * Value Object para calificaciones en RideECI
+ * Representa una calificación entre usuarios después de un viaje
+ *
+ * @author RideECI
+ * @version 1.0
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

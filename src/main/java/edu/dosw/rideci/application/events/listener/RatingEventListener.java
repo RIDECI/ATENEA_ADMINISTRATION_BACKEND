@@ -8,6 +8,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
+
+/**
+ * Listener para eventos de calificaciones en RideECI
+ * Procesa la creación de nuevas calificaciones y actualiza la reputación de usuarios
+ *
+ * @author RideECI
+ * @version 1.0
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -15,6 +23,12 @@ public class RatingEventListener {
 
     private final ReputationService reputationService;
 
+    /**
+     * Procesa eventos de calificaciones creadas
+     * Valida el evento y delega el procesamiento al servicio de reputación
+     *
+     * @param e Evento de calificación creada
+     */
     @RabbitListener(queues = RabbitMQConfig.RATING_CREATED_QUEUE, containerFactory = "rabbitListenerContainerFactory")
     public void handleRatingCreated(RatingCreatedEvent e) {
         if (e == null || e.getRatedProfileId() == null) {

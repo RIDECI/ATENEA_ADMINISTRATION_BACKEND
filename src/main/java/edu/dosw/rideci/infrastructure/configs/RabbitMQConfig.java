@@ -50,6 +50,9 @@ public class RabbitMQConfig {
     public static final String EXCHANGE_PROFILE = "profile.exchange";
     public static final String PROFILE_CREATED_ROUTING_KEY = "profile.created";
     public static final String RATING_CREATED_ROUTING_KEY = "rating.created";
+    public static final String PROFILE_COMMAND_ACTIVATE = "profile.command.activate";
+    public static final String PROFILE_COMMAND_DEACTIVATE = "profile.command.deactivate";
+    public static final String PROFILE_COMMAND_QUEUE = "profile.command.queue";
 
 
 
@@ -103,6 +106,17 @@ public class RabbitMQConfig {
     public Binding bindRatingToTravel(@Qualifier("ratingSyncQueue") Queue q,
                                       @Qualifier("tripExchange") TopicExchange tripExchange) {
         return BindingBuilder.bind(q).to(tripExchange).with(RabbitMQConfig.TRIP_FINISHED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Queue profileCommandQueue() {
+        return QueueBuilder.durable(PROFILE_COMMAND_QUEUE).build();
+    }
+
+    @Bean
+    public Binding bindProfileCommand(@Qualifier("profileCommandQueue") Queue q,
+                                      @Qualifier("profileExchange") TopicExchange ex) {
+        return BindingBuilder.bind(q).to(ex).with("profile.command.#");
     }
 
     //-----Viajes-----

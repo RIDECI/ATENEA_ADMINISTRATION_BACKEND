@@ -10,8 +10,12 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 /**
- * Listener que recibe eventos de usuario desde el exchange user.exchange
- * y sincroniza (upsert) la información local para el módulo Admin.
+ * Listener para eventos de usuarios en RideECI
+ * Recibe eventos de usuario desde el exchange user.exchange y sincroniza la información
+ * local para el módulo Admin mediante operaciones upsert
+ *
+ * @author RideECI
+ * @version 1.0
  */
 @Component
 @RequiredArgsConstructor
@@ -21,6 +25,12 @@ public class UserRegisteredListener {
     private final CreateUserUseCase createUserUseCase;
     private final UserEventMapper mapper;
 
+    /**
+     * Procesa eventos de usuarios registrados
+     * Sincroniza la información del usuario en el módulo de administración
+     *
+     * @param event Evento de usuario recibido
+     */
     @RabbitListener(queues = RabbitMQConfig.USER_CREATED_QUEUE, containerFactory = "rabbitListenerContainerFactory")
     public void handleUserRegistered(UserEvent event) {
         log.info("[UserRegisteredListener] Received UserEvent: {}", event);

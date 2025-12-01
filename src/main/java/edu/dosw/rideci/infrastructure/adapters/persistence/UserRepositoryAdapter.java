@@ -9,6 +9,7 @@ import edu.dosw.rideci.infrastructure.persistence.repository.mapper.UserDocument
 import edu.dosw.rideci.domain.model.User;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 /**
@@ -114,6 +115,40 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
         if (maybeDoc.isEmpty()) return false;
         var doc = maybeDoc.get();
         doc.setReputation(average);
+        repo.save(doc);
+        return true;
+    }
+
+    @Override
+    public long incrementSuspensionCount(Long userId, Long adminId, String reason) {
+        var docOpt = repo.findById(userId);
+        if (docOpt.isEmpty()) throw new NoSuchElementException("User not found");
+        var doc = docOpt.get();
+        int current = doc.getSuspensionCount();
+        int next = current + 1;
+        doc.setSuspensionCount(next);
+
+        if (next >= 3) {
+            doc.setBlocked(true);
+            doc.setState("BLOCKED");
+        } else {
+            doc.setState("SUSPENDED");
+        }
+
+        repo.save(doc);
+        return next;
+    }
+
+
+    @Override
+    public boolean blockUser(Long userId, Long adminId, String reason) {
+        var docOpt = repo.findById(userId);
+        if (docOpt.isEmpty()) return false;
+        var doc = docOpt.get();
+        if (doc.isBlocked()) return false;
+
+        doc.setBlocked(true);
+        doc.setState("BLOCKED");
         repo.save(doc);
         return true;
     }

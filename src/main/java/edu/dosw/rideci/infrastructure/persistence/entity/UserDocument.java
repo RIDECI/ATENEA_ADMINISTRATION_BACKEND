@@ -29,4 +29,6 @@ public class UserDocument {
     private LocalDateTime lastLogin;
     private String phoneNumber;
     private LocalDateTime createdAt;
+    private int suspensionCount;
+    private boolean blocked;
 }

@@ -6,6 +6,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
+/**
+ * Evento de dominio para calificación creada en RideECI
+ * Se publica cuando un usuario califica a otro después de un viaje
+ *
+ * @author RideECI
+ * @version 1.0
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
