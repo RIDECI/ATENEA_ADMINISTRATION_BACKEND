@@ -18,4 +18,6 @@ public class SuspendUserRequestDto {
     private String reason;
     private String startAt;
     private String endAt;
+    private String profileType;
+    private Boolean accountOnly;
 }

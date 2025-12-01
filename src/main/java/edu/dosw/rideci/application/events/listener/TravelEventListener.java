@@ -9,6 +9,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
+
+/**
+ * Listener para eventos de viajes en RideECI
+ * Procesa creación y finalización de viajes para mantener el monitoreo actualizado
+ *
+ * @author RideECI
+ * @version 1.0
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -16,6 +24,11 @@ public class TravelEventListener {
 
     private final TripEventService tripEventService;
 
+    /**
+     * Procesa eventos de viajes creados
+     *
+     * @param event Evento de viaje creado
+     */
     @RabbitListener(queues = RabbitMQConfig.TRIP_CREATED_QUEUE)
     public void handleTripCreated(TravelCreatedEvent event) {
         try {
@@ -33,6 +46,11 @@ public class TravelEventListener {
         }
     }
 
+    /**
+     * Procesa eventos de viajes finalizados
+     *
+     * @param event Evento de viaje completado
+     */
     @RabbitListener(queues = RabbitMQConfig.TRIP_FINISHED_QUEUE)
     public void handleTripFinished(TravelCompletedEvent event) {
         try {

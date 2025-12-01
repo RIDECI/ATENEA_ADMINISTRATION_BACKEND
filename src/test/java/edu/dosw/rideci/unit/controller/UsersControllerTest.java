@@ -87,9 +87,10 @@ class UsersControllerTest {
     void shouldActivateUser() {
         Long id = 13L;
         Long adminId = 2L;
-        ResponseEntity<Void> res = controller.activateUser(id, adminId);
+        ResponseEntity<Void> res = controller.activateUser(id, adminId, null);
 
         assertEquals(HttpStatus.NO_CONTENT, res.getStatusCode());
+        verify(activateUserUseCase, times(1)).activateUser(id, adminId, null);
     }
 
     @Test

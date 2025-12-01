@@ -12,6 +12,8 @@ public interface ActivateUserUseCase {
      *
      * @param userId ID del usuario a activar
      * @param adminId ID del administrador que realiza la acción
+     * @param profileType optional -> si no es null, solo reactiva profiles de ese tipo
      */
-    void activateUser(Long userId, Long adminId);
+    void activateUser(Long userId, Long adminId, String profileType);
 }
+

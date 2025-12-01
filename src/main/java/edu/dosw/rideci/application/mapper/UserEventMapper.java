@@ -14,8 +14,8 @@ import org.mapstruct.ReportingPolicy;
 public interface UserEventMapper {
 
     @Mapping(target = "id", source = "userId")
-    @Mapping(target = "status", source = "state")            // evento.state -> domain.status
-    @Mapping(target = "phoneNumber", source = "phoneNumber") // copy directo
+    @Mapping(target = "status", source = "state")
+    @Mapping(target = "phoneNumber", source = "phoneNumber")
     @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now())")
     User toDomain(UserEvent ev);
 }

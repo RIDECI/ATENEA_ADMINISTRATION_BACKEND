@@ -51,9 +51,12 @@ public class UsersController {
 
     @Operation(summary = "Activar usuario")
     @PatchMapping("/{id}/activate")
-    public ResponseEntity<Void> activateUser(@PathVariable("id") Long id,
-                                             @RequestParam Long adminId) {
-        activateUserUseCase.activateUser(id, adminId);
+    public ResponseEntity<Void> activateUser(
+            @PathVariable("id") Long id,
+            @RequestParam Long adminId,
+            @RequestParam(required = false) String profileType) {
+
+        activateUserUseCase.activateUser(id, adminId, profileType);
         return ResponseEntity.noContent().build();
     }
 

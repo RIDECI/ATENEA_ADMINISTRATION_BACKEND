@@ -9,6 +9,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Servicio para gestión de reputación en RideECI
+ * Maneja el procesamiento de calificaciones y actualización de reputaciones de usuarios
+ *
+ * @author RideECI
+ * @version 1.0
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -17,6 +24,12 @@ public class ReputationService {
     private final ReputationRepositoryPort reputationRepo;
     private final UserRepositoryPort userRepo;
 
+    /**
+     * Procesa un evento de calificación creada
+     * Almacena la calificación y actualiza la reputación del usuario calificado
+     *
+     * @param e Evento de calificación creada
+     */
     @Transactional
     public void handleRatingCreated(RatingCreatedEvent e) {
         if (e == null) {
