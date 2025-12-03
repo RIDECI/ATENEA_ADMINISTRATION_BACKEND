@@ -1,8 +1,6 @@
 # 👨‍💼  ATENEA_ADMINISTRATION_BACKEND
 
-Centraliza las herramientas de gestión y control del sistema,
-permitiendo al área de movilidad o seguridad institucional supervisar la operación,
-validar usuarios y emitir reportes.
+Centralizes the system’s management and control tools, allowing the institutional mobility or security area to supervise operations, validate users, and generate reports.
 
 ## 👥 Developers
 * Raquel Iveth Selma Alaya
