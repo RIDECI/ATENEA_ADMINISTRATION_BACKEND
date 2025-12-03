@@ -232,23 +232,21 @@ This section provides a visual representation of the module's architecture ilust
 ### 🧩 Context Diagram
 
 ---
+The Institutional Administration Module acts as RIDECI's comprehensive monitoring center,
+where administrators manage and control all critical aspects of the platform to
+ensure security and efficiency.
 
-El Módulo de Administración Institucional actúa como el centro de supervisión integral de RIDECI,
-donde los administradores gestionan y controlan todos los aspectos críticos de la plataforma para
-garantizar seguridad y eficiencia.
+Its main functions include:
 
-Sus funciones principales incluyen:
+- Driver and vehicle validation through document reviews
 
-- Validación de conductores y vehículos mediante revisiones documentales
+- Security monitoring with report review and incident management
 
-- Monitoreo de seguridad con revisión de reportes y gestión de incidentes
+- User control through temporary suspensions for violations
 
-- Control de usuarios mediante suspensiones temporales por incumplimientos
+- Operational regulation by defining permitted travel times
 
-- Regulación operativa definiendo horarios permitidos para viajes
-
-- Análisis de datos mediante estadísticas de uso y generación de reportes PDF
-
+- Data analysis through usage statistics and PDF report generation
 ![Context Diagram](docs/uml/DiagramaContexto.png)
 
 
@@ -257,70 +255,63 @@ Sus funciones principales incluyen:
 
 ---
 
+The Institutional Administration module uses a hexagonal architecture to keep business logic independent of frameworks and technical details. This facilitates agile testing, updates, and deployments.
 
-El módulo de Administración Institucional usa Arquitectura Hexagonal para mantener la lógica de negocio
-independiente de frameworks y detalles técnicos. Esto facilita pruebas, actualizaciones y despliegues ágiles.
+#### Structure and Flow
 
-#### Estructura y flujo
+The React and TypeScript frontend calls controllers that invoke use cases. The use cases contain the core logic: driver approval, user suspension, and report generation. The use cases only depend on ports, keeping the core isolated.
 
-El frontend en React y TypeScript llama controladores que invocan casos de uso. Los casos de uso contienen la lógica central: aprobación de conductores, suspensión de usuarios y generación de reportes. Los casos de uso sólo dependen de puertos, manteniendo el core aislado.
+#### Ports and Adapters
 
-#### Puertos y adaptadores
+Ports define contracts for persistence, event publishing, and notifications. Adapters implement these contracts by integrating with MongoDB, RabbitMQ, and external authentication and reputation services. This allows for replacing or simulating implementations in testing.
 
-Los puertos definen contratos para persistencia, publicación de eventos y notificaciones. Los adaptadores implementan esos contratos integrando con MongoDB, RabbitMQ y servicios externos de autenticación y reputación. Esto permite sustituir o simular implementaciones en pruebas.
+#### Auditing and Events
 
-#### Auditoría y eventos
+All administrative actions are audited and propagated as events with correlation identifiers and commands for idempotence and traceability. Asynchronous processing avoids blocking the main operation.
 
-Todas las acciones administrativas se registran en auditoría y se propagan como eventos con identificadores de correlación y comandos para idempotencia y trazabilidad. El procesamiento asíncrono evita bloquear la operación principal.
+#### Policies and Extensibility
 
-#### Políticas y extensibilidad
+Publishing policies are evaluated using a strategy factory. The strategy pattern allows adding rules such as permitted days, roles, or exceptions without modifying the core and facilitates unit testing for each rule.
 
-Las políticas de publicación se evalúan con un factory de estrategias. El patrón strategy permite añadir reglas como días permitidos, roles o excepciones sin tocar el core y facilita pruebas unitarias de cada regla.
+#### Example Flow
 
-#### Ejemplo de flujo
+When a driver is approved, the flow goes from the frontend to the use case, which updates the repository, logs the action in audit mode, and publishes an event. Listeners consume the event for notifications, reputation updates, or report generation without impacting the initial operation.
 
-Al aprobar un conductor el flujo va del frontend al caso de uso, que actualiza el repositorio, registra la acción en auditoría y publica un evento. Listeners consumen el evento para notificaciones, actualizaciones de reputación o generación de reportes sin impactar la operación inicial.
+### Functionality of the Institutional Administrator Module:
 
+#### User Management
 
-### Funcionamiento del Módulo de Administrador Institucional:
+- List users and view their details.
 
-#### Gestión de usuarios
+- Suspend, activate, or block users.
 
-- Listar usuarios y ver sus detalles.
+- Manage driver profiles, approving or rejecting them based on the documents submitted to validate their credentials.
 
-- Suspender, activar o bloquear usuarios.
+#### Trip Tracking
 
-- Gestionar perfiles de conductores, aprobando o rechazando según los documentos enviados para validar sus papeles.
+- Track trips in real time to obtain information and take action if anything suspicious occurs with a user.
 
-#### Seguimiento de viajes
+#### Posting Policies
 
-- Realizar seguimiento a los viajes en tiempo real para obtener información y tomar
-  acciones si ocurre algo sospechoso con un usuario.
+- Configure policies to post work schedules on specific days of the week and at specific times, so that drivers work according to that schedule.
 
-#### Políticas de publicación
+#### Reports
 
-- Configurar políticas para publicar horarios de trabajo los días de la semana y en horas específicas,
-  de modo que los conductores trabajen siguiendo ese horario.
+- Receive safety reports.
 
-#### Reportes
+- Export reports to CSV, Excel, or PDF as needed.
 
-- Recibir reportes de seguridad.
+#### Metrics and Statistics
 
-- Exportar reportes a CSV, Excel o PDF según sea necesario.
+- Receive metrics and statistics to assess the environmental and sustainability landscape.
 
+#### Business Restrictions:
 
-#### Métricas y estadísticas
+- The institutional administrator will configure the schedules, allowing drivers to work only from Monday to Saturday, all day.
 
-- Recibir métricas y estadísticas para contemplar el panorama ambiental y sostenible.
+- When a user is suspended, they will not be automatically reactivated after a certain period; the administrator must reactivate them manually.
 
-
-#### Restricciones de negocio:
-
-- El administrador institucional se encargará de configurar los horarios, permitiendo que los conductores solo puedan laborar de lunes a sábado durante todo el día.
-
-- Al suspender un usuario, este no se activará automáticamente después de un tiempo; el administrador debe activarlo manualmente.
-
-- En caso de suspenderlo, se cambiará su rol por uno que esté activo.
+- If a user is suspended, their role will be changed to an active one.
 
 
 ![Specific Components Diagram](docs/uml/DiagramaComponentesEspecifico.png)
@@ -330,14 +321,9 @@ Al aprobar un conductor el flujo va del frontend al caso de uso, que actualiza e
 
 ---
 
-Administración Institucional en RIDECI permite a los administradores validar cuentas de conductores y vehículos,
-visualizar viajes activos y sus participantes, configurar horarios permitidos para viajes,
-exportar reportes en formatos como PDF, revisar estadísticas de uso y datos de sostenibilidad,
-así como analizar reportes de seguridad y comportamiento de usuarios.
+Institutional Administration in RIDECI allows administrators to validate driver and vehicle accounts, view active trips and their participants, configure permitted travel times, export reports in formats such as PDF, review usage statistics and sustainability data, and analyze security and user behavior reports.
 
-Este módulo funciona como el centro de control del sistema, garantizando el cumplimiento de políticas
-institucionales y manteniendo la seguridad mediante la supervisión constante de todas las operaciones,
-mientras proporciona herramientas completas de gestión y generación de informes para la toma de decisiones institucionales.
+This module functions as the system's control center, ensuring compliance with institutional policies and maintaining security through constant monitoring of all operations, while providing comprehensive management and reporting tools for institutional decision-making.
 
 
 ![Use Cases Diagram](docs/uml/DiagramaCasosUso.png)
@@ -347,96 +333,84 @@ mientras proporciona herramientas completas de gestión y generación de informe
 
 ---
 
-### Patrones de diseño:
+### Design Patterns:
 
 #### Strategy:
 
-Se uso ya que nos permite encapsular las reglas de las políticas de publicación de RidECI
-y poder intercambiarlas y combinarlas sin necesidad de cambiar al cliente,
-en este caso los conductores que tienen que seguir el horario establecido con las horas.
+This pattern is used because it allows us to encapsulate RidECI's publishing policy rules
+and exchange and combine them without needing to change the client,
+in this case, the drivers who have to follow the established schedule.
 
 #### Composite:
 
-Se uso junto al patron de diseño strategy ya que agrupa todas las políticas permitiendo evaluarlas
-y facilitar si se quieren añadir más reglas compuestas.
-
+This pattern is used in conjunction with the Strategy design pattern because it groups all the policies, allowing them to be evaluated
+and facilitating the addition of more composite rules if desired.
 
 #### Factory:
 
-Trabaja en conjunto con Composite y nos permitio evitar centralizar toda la logica de
-la politica de los horarios ya que define criterios definidos basados
-en una política  como ser validar el rol, hasta que horas un conductor debe trabajar y que días de la semana.
-
+This pattern works in conjunction with Composite and allowed us to avoid centralizing all the logic of
+the scheduling policy, as it defines specific criteria based
+on a policy, such as validating the driver's role, the hours until which a driver must work, and the days of the week.
 
 #### Command
 
-No se ve reflejado en el diagrama de clases pero se uso para los eventos ya que modela una accion la cual tenemos que
-consumir para que sea ejecutado y sirva como por ejemplo con los eventos de inicio y fin de un viaje para
-que el administrador pueda actuar según la situación.
+It's not reflected in the class diagram, but it's used for events since it models an action that we have to consume for it to be executed and serve, for example, with the start and end events of a trip so that the administrator can act according to the situation.
 
----
+--
 
-### **Principios SOLID:**
+### **SOLID Principles:**
 
-#### **Single Responsability:**
+#### **Single Responsibility:**
 
-- User para centralizar la logica de los roles de los usuarios y poder manejar su perfil segun su comportamiento.
+- User: to centralize the logic of user roles and manage their profiles according to their behavior.
 
-- Driver el condutor que quiere validar su cuenta, el cual el admin debe revisar y determinar si sus papeles ameritan que sea conductor.
+- Driver: the driver who wants to validate their account, which the admin must review and determine if their documents qualify them to be a driver.
 
-- Trip Monitor para que el administrador esta atento a los viajes y determinar que no se salga de su ruta o algun movimiento
-  raro por parte del conductor.
+- Trip Monitor: so the administrator can monitor trips and ensure they don't deviate from their route or detect any unusual movements by the driver.
 
-- Security report manejea los reportes realizados por los usuarios y que el administrador pueda mantener bajo control
-  cualquier situación.
+- Security Report: manages the reports made by users so the administrator can keep any situation under control.
 
-- Export Report para que el adminitrador si se requiere un documento por cvs, pdf o excel puedo exportar el reporte y
-  entregarlo para investigación o evidencia si se requiere.
+- Export Report: This allows the administrator to export the report as a CSV, PDF, or Excel file if needed, and provide it for investigation or as evidence.
 
-- AdminAction guarda las auditorias es decir las acciones que un administrador llevo a cabo ya sea sobre suspender o validar
-  un usuario o conductor.
+- AdminAction: This stores audit logs, which record the actions an administrator has taken, such as suspending or validating a user or driver.
 
-- Publicación de politicas y strategy nos permite manejar distintas politicas y que sean faciles de agregar en la aplicación.
-
+- Policy and Strategy Publishing: This allows us to manage different policies and easily add them to the application.
 
 #### Open/Closed:
 
-Podemos extender las politicas de publicacion para incluir a mas de un tipo de estas por lo que cada politica funciona de
-manera independiente sin centralizar toda la logica en una sola clase.
+We can extend the publishing policies to include more than one type, so each policy functions independently without centralizing all the logic in a single class.
 
 
 #### Interface Segregation Principle:
 
-Las implementaciones de PolicyStrategy son intercambiables nadie necesita conocer la implementación concreta
-
+Policy Strategy implementations are interchangeable; no one needs to know the specific implementation.
 
 ![Class Diagram](docs/uml/DiagramaClases.png)
 
 
-### 🧩 Data Base Diagram
+### 🧩 Database Diagram
 
 ---
 
-La base de datos usa mayormente documentos referenciados para mantener consistencia, rendimiento y escalabilidad.
+The database primarily uses referenced documents to maintain consistency, performance, and scalability.
 
-AdminAction se almacena embebido porque se accede habitualmente junto al recurso afectado y se requiere atomicidad en lecturas rápidas.
+AdminAction is stored embedded because it is frequently accessed alongside the affected resource, and atomicity is required for fast reads.
 
-MongoDB se eligió por su modelo documental flexible, escalabilidad y buena integración con el stack.
+MongoDB was chosen for its flexible document model, scalability, and good integration with the stack.
 
-Ademas nos permite manejar documentos de forma embebida y referenciada y no es tan estricto, ya que ofrece un integración fácil en repositorios y mapping.
+It also allows us to manage documents in both embedded and referenced formats and is less restrictive, offering easy integration with repositories and mapping.
 
-Utiliza MongoDB para almacenar datos institucionales.
+MongoDB is used to store institutional data.
 
+#### Referenced Documents:
 
-#### Documentos Referenciados:
+- Prevents data duplication and maintains consistency when entities are used in multiple contexts.
 
-- Evita duplicación de datos y mantiene la consistencia cuando las entidades se usan en muchos contextos.
+- Enables pagination and efficient management of large collections such as travel and reports.
 
-- Permite paginación y manejo eficiente de colecciones que crecen mucho como viajes y reportes.
+- Facilitates independent updates without rewriting large parent documents.
 
-- Facilita actualizaciones independientes sin reescribir grandes documentos padre.
-
-- Suma flexibilidad para consultas y agregaciones usando lookup solo cuando se necesita.
+- Adds flexibility for queries and aggregations by using lookups only when needed.
 
 
 
@@ -447,15 +421,15 @@ Utiliza MongoDB para almacenar datos institucionales.
 
 ---
 
-Los diagramas de secuencias estan enfocados en seguir la estructura limpia del proyecto siguiendo el el siguiente flujo:
+The sequence diagrams are focused on following the clean structure of the project, adhering to the following flow:
 
 - Controller
 - Use Case
 - Repository Port
 - Repository Adapter
-- Mongo Repository 
+- MongoDB Repository
 
-Luego usa la base de datos Mongo para evidenciar los documentos 
+Then, the MongoDB database is used to store the documentation.
 
 
 
@@ -467,35 +441,35 @@ Luego usa la base de datos Mongo para evidenciar los documentos
 
 ---
 
-#### Backend y Despliegue
+#### Backend and Deployment
 
-- Desarrollado en Java con Spring Boot.
+- Developed in Java with Spring Boot.
 
-- Desplegado automáticamente en Railway mediante un pipeline de CI/CD con GitHub Actions.
+- Automatically deployed to Railway using a CI/CD pipeline with GitHub Actions.
 
-#### Base de Datos
+#### Database
 
-- Usa MongoDB para almacenar datos de:
+- Uses MongoDB to store data for:
 
-    - Validaciones de usuarios.
+- User validations.
 
-    - Registros de auditoría.
+- Audit logs.
 
-    - Reportes institucionales.
+- Institutional reports.
 
-#### Calidad del Código
+### Code Quality
 
-- Integra JaCoCo para medir cobertura de pruebas.
+- Integrates JaCoCo to measure test coverage.
 
-- Utiliza SonarQube para análisis estático y detección de vulnerabilidades.
+- Uses SonarQube for static analysis and vulnerability detection.
 
-#### Funcionalidades Principales
+#### Main Features
 
-- Supervisión de viajes.
+- Trip monitoring.
 
-- Validación segura de accesos y registros.
+- Secure access and log validation.
 
-- Generación de reportes institucionales.
+- Generation of institutional reports.
 
 
 ![Specific Deploy Diagram](docs/uml/DiagramaDespliegue.png)
@@ -508,21 +482,21 @@ Luego usa la base de datos Mongo para evidenciar los documentos
 
 #### **Frontend:** 
  
-Desarrollado en TypeScript y desplegado en Vercel".
+Developed in TypeScript and deployed in Vercel.
 
 
 #### **API Gateway:** 
 
-Centraliza y gestiona las comunicaciones entre los componentes.
+It centralizes and manages communications between components.
 
 
 #### **Backend:** 
 
-Gestiona la lógica de administración institucional, integrando JaCoco SonarQube para garantizar calidad de código y funcione de manera correcta para los conductores, viajes y usuarios.
+We manage the institutional administration logic, integrating JaCoco SonarQube to ensure code quality and proper functionality for drivers, trips, and users.
 
-Ademas usamos un Pipeline para validar que todo funcione como debe funcionar.
+We also use a pipeline to validate that everything works as expected.
 
-Desplieguemos en Railway para construir el Docker, usamos Swagger y PostMan para probar y spring boot para gestionar el proyecto de manera eficiente mediante una API REST flexible.
+We deploy to Railway to build the Docker container, use Swagger and Postman for testing, and Spring Boot to efficiently manage the project through a flexible REST API.
 
 
 ![alt text](docs/uml/DiagramaComponentesGeneral.png)
@@ -620,4 +594,4 @@ Testing is a essential part of the project functionability, this part will show 
 
 ![EvidenciaSwagger](docs/imagenes/swagger.png)
 
-**RIDECI** - Conectando a la comunidad para moverse de forma segura, económica y sostenible.
+**RIDECI** - Connecting the community to move safely, economically and sustainably.
