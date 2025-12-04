@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -42,7 +43,7 @@ public class RabbitMQConfig {
     // Usuario
     public static final String EXCHANGE_USER = "user.exchange";
     public static final String USER_CREATED_QUEUE = "user.sync.queue";
-    public static final String USER_ROUTING_KEY = "user.#";
+    public static final String USER_ROUTING_KEY = "auth.user.#";
 
     //Perfiles
     public static final String PROFILE_CREATED_QUEUE = "profile.sync.queue";
@@ -274,5 +275,18 @@ public class RabbitMQConfig {
         f.setConcurrentConsumers(2);
         f.setMaxConcurrentConsumers(10);
         return f;
+    }
+
+
+    /**
+     * Configura el factory para admin
+     * @param cf
+     * @return
+     */
+    @Bean
+    public RabbitAdmin rabbitAdmin(ConnectionFactory cf) {
+        RabbitAdmin admin = new RabbitAdmin(cf);
+        admin.setAutoStartup(true);
+        return admin;
     }
 }

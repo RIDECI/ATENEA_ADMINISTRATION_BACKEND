@@ -1,5 +1,7 @@
 package edu.dosw.rideci.application.events.listener;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import edu.dosw.rideci.application.events.TravelCreatedEvent;
 import edu.dosw.rideci.application.events.TravelCompletedEvent;
 import edu.dosw.rideci.application.service.TripEventService;
@@ -8,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
+
 
 
 /**
@@ -23,6 +26,7 @@ import org.springframework.stereotype.Component;
 public class TravelEventListener {
 
     private final TripEventService tripEventService;
+    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     /**
      * Procesa eventos de viajes creados
@@ -67,4 +71,18 @@ public class TravelEventListener {
             throw ex;
         }
     }
+
+    /**
+    @RabbitListener(queues = RabbitMQConfig.TRIP_CREATED_QUEUE, containerFactory = "rabbitListenerContainerFactory")
+    public void handleRawTripCreated(Map<String, Object> payload) {
+        log.info("RAW travel.created payload -> {}", payload);
+        try {
+            TravelCreatedEvent e = mapper.convertValue(payload, TravelCreatedEvent.class);
+            handleTripCreated(e);
+        } catch (Exception ex) {
+            log.error("No se pudo mapear raw payload a TravelCreatedEvent: {}", ex.getMessage(), ex);
+        }
+    }
+    **/
+
 }

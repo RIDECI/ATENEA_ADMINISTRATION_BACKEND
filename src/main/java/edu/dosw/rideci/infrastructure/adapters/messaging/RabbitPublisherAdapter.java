@@ -3,6 +3,7 @@ package edu.dosw.rideci.infrastructure.adapters.messaging;
 import edu.dosw.rideci.application.port.out.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -14,17 +15,28 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Component("rabbitPublisherAdapter")
 public class RabbitPublisherAdapter implements EventPublisher {
+
     private final RabbitTemplate rabbitTemplate;
 
-    /**
-     * Publica un evento en RabbitMQ
-     *
-     * @param event Evento a publicar
-     * @param routingKey Clave de enrutamiento
-     */
+    @Value("${app.rabbit.default-exchange:admin.exchange}")
+    private String defaultExchange;
+
     @Override
     public void publish(Object event, String routingKey) {
-        rabbitTemplate.convertAndSend("admin.exchange", routingKey, event);
+        if (routingKey == null) routingKey = "";
+
+        String exchange;
+        if (routingKey.startsWith("travel.")) {
+            exchange = "travel.exchange";
+        } else if (routingKey.startsWith("profile.")) {
+            exchange = "profile.exchange";
+        } else if (routingKey.startsWith("user.")) {
+            exchange = "user.exchange";
+        } else {
+            exchange = defaultExchange;
+        }
+
+        rabbitTemplate.convertAndSend(exchange, routingKey, event);
     }
 
     @Override
