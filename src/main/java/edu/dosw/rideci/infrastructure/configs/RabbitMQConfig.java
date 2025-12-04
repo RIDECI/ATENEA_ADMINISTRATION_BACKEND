@@ -55,6 +55,11 @@ public class RabbitMQConfig {
     public static final String PROFILE_COMMAND_DEACTIVATE = "profile.command.deactivate";
     public static final String PROFILE_COMMAND_QUEUE = "profile.command.queue";
 
+    //Reportes
+    public static final String REPORT_EXCHANGE = "rideci.report.exchange";
+    public static final String REPORT_CREATED_ROUTING_KEY = "report.created";
+    public static final String REPORT_CREATED_QUEUE = "rideci.report.created.queue";
+
 
 
     //-----Usuarios-----
@@ -228,6 +233,22 @@ public class RabbitMQConfig {
         return BindingBuilder.bind(driverDocumentQueue).to(adminExchange).with(DRIVER_DOCUMENT_ROUTING);
     }
 
+    //Reportes
+    @Bean
+    public TopicExchange reportExchange() {
+        return ExchangeBuilder.topicExchange(REPORT_EXCHANGE).durable(true).build();
+    }
+
+    @Bean
+    public Queue reportCreatedQueue() {
+        return QueueBuilder.durable(REPORT_CREATED_QUEUE).build();
+    }
+
+    @Bean
+    public Binding bindReportCreated(@Qualifier("reportCreatedQueue") Queue q,
+                                     @Qualifier("reportExchange") TopicExchange ex) {
+        return BindingBuilder.bind(q).to(ex).with(REPORT_CREATED_ROUTING_KEY);
+    }
 
 
     /**
