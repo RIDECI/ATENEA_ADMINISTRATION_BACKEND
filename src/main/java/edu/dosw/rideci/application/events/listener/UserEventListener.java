@@ -29,6 +29,10 @@ public class UserEventListener {
 
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
+    /**
+     * Recibe al usuario
+     * @param payload
+     */
     @RabbitListener(queues = RabbitMQConfig.USER_CREATED_QUEUE, containerFactory = "rabbitListenerContainerFactory")
     public void receiveRaw(Map<String,Object> payload) {
         log.info("[UserEventListener] RAW payload -> {}", payload);
