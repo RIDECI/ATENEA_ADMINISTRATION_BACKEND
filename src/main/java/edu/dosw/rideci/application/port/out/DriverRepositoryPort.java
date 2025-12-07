@@ -53,4 +53,13 @@ public interface DriverRepositoryPort {
      * @return Lista de todos los conductores
      */
     List<Driver> findAll();
+
+
+    /**
+     * Busca un conductor por userId (ID del usuario propietario del perfil)
+     *
+     * @param userId ID del usuario
+     * @return Optional con el Driver si existe
+     */
+    Optional<Driver> findByUserId(Long userId);
 }

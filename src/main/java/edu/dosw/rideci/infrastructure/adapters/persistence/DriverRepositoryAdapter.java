@@ -92,4 +92,15 @@ public class DriverRepositoryAdapter implements DriverRepositoryPort {
     public List<Driver> findAll() {
         return repo.findAll().stream().map(mapper::toDomain).toList();
     }
+
+
+    /**
+     * Encuentra un usuario por su id
+     * @param userId ID del usuario
+     * @return
+     */
+    @Override
+    public Optional<Driver> findByUserId(Long userId) {
+        return repo.findByUserId(userId).map(mapper::toDomain);
+    }
 }

@@ -2,6 +2,8 @@ package edu.dosw.rideci.infrastructure.persistence.repository;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
+import java.util.Optional;
+
 import edu.dosw.rideci.infrastructure.persistence.entity.DriverDocument;
 
 /**
@@ -13,4 +15,5 @@ import edu.dosw.rideci.infrastructure.persistence.entity.DriverDocument;
 public interface DriverMongoRepository extends MongoRepository<DriverDocument, Long> {
     List<DriverDocument> findByStatus(String status);
     List<DriverDocument> findByNameContainingIgnoreCase(String q);
+    Optional<DriverDocument> findByUserId(Long userId);
 }

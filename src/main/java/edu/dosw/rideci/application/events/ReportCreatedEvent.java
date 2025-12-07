@@ -1,5 +1,8 @@
 package edu.dosw.rideci.application.events;
 
+import edu.dosw.rideci.domain.model.enums.ReportStatus;
+import edu.dosw.rideci.domain.model.enums.ReportType;
+import edu.dosw.rideci.domain.model.valueobjects.Location;
 import lombok.Builder;
 import lombok.Data;
 
@@ -17,7 +20,13 @@ import java.time.LocalDateTime;
 @Builder
 public class ReportCreatedEvent {
     private String reportId;
-    private Long createdBy;
+    private Long userId;
+    private Long targetId;
+    private Long tripId;
+    private ReportType type;
+    private Location location;
+    private String description;
     private LocalDateTime createdAt;
-    private String type;
+    private ReportStatus status;
+    private String evidence;
 }

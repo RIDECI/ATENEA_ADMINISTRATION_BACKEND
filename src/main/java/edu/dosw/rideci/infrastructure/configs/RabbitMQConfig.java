@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -42,12 +43,27 @@ public class RabbitMQConfig {
     // Usuario
     public static final String EXCHANGE_USER = "user.exchange";
     public static final String USER_CREATED_QUEUE = "user.sync.queue";
-    public static final String USER_ROUTING_KEY = "user.#";
+    public static final String USER_ROUTING_KEY = "auth.user.#";
 
     //Perfiles
-    public static final String EXCHANGE_PROFILE = "profile.exchange";
     public static final String PROFILE_CREATED_QUEUE = "profile.sync.queue";
-    public static final String PROFILE_ROUTING_KEY = "profile.created";
+    public static final String RATING_CREATED_QUEUE = "rating.sync.queue";
+    public static final String EXCHANGE_PROFILE = "profile.exchange";
+    public static final String PROFILE_CREATED_ROUTING_KEY = "profile.created";
+    public static final String RATING_CREATED_ROUTING_KEY = "rating.created";
+    public static final String PROFILE_COMMAND_ACTIVATE = "profile.command.activate";
+    public static final String PROFILE_COMMAND_DEACTIVATE = "profile.command.deactivate";
+    public static final String PROFILE_COMMAND_QUEUE = "profile.command.queue";
+    public static final String PROFILE_UPDATED_ROUTING_KEY = "profile.updated";
+
+    //Reportes
+    public static final String REPORT_EXCHANGE = "rideci.report.exchange";
+    public static final String REPORT_CREATED_ROUTING_KEY = "report.created";
+    public static final String REPORT_CREATED_QUEUE = "rideci.report.created.queue";
+
+
+
+    //-----Usuarios-----
 
     @Bean
     public Queue userCreatedQueue() {
@@ -64,9 +80,16 @@ public class RabbitMQConfig {
         return BindingBuilder.bind(userCreatedQueue).to(userExchange).with(USER_ROUTING_KEY);
     }
 
+    //-----Perfiles-----
+
     @Bean
-    public Queue profileCreatedQueue() {
+    public Queue profileSyncQueue() {
         return QueueBuilder.durable(PROFILE_CREATED_QUEUE).build();
+    }
+
+    @Bean
+    public Queue ratingSyncQueue() {
+        return QueueBuilder.durable(RATING_CREATED_QUEUE).build();
     }
 
     @Bean
@@ -75,10 +98,41 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding bindProfileCreated(Queue profileCreatedQueue, TopicExchange profileExchange) {
-        return BindingBuilder.bind(profileCreatedQueue).to(profileExchange).with(PROFILE_ROUTING_KEY);
+    public Binding bindProfileCreated(@Qualifier("profileSyncQueue") Queue q,
+                                      @Qualifier("profileExchange") TopicExchange ex) {
+        return BindingBuilder.bind(q).to(ex).with(PROFILE_CREATED_ROUTING_KEY);
     }
 
+    @Bean
+    public Binding bindRatingCreatedToProfile(@Qualifier("ratingSyncQueue") Queue q,
+                                              @Qualifier("profileExchange") TopicExchange ex) {
+        return BindingBuilder.bind(q).to(ex).with(RATING_CREATED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding bindRatingToTravel(@Qualifier("ratingSyncQueue") Queue q,
+                                      @Qualifier("tripExchange") TopicExchange tripExchange) {
+        return BindingBuilder.bind(q).to(tripExchange).with(RabbitMQConfig.TRIP_FINISHED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding bindProfileUpdated(@Qualifier("profileSyncQueue") Queue q,
+                                      @Qualifier("profileExchange") TopicExchange ex) {
+        return BindingBuilder.bind(q).to(ex).with(PROFILE_UPDATED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Queue profileCommandQueue() {
+        return QueueBuilder.durable(PROFILE_COMMAND_QUEUE).build();
+    }
+
+    @Bean
+    public Binding bindProfileCommand(@Qualifier("profileCommandQueue") Queue q,
+                                      @Qualifier("profileExchange") TopicExchange ex) {
+        return BindingBuilder.bind(q).to(ex).with("profile.command.#");
+    }
+
+    //-----Viajes-----
     @Bean
     public TopicExchange tripExchange() {
         return ExchangeBuilder.topicExchange(TRIP_EXCHANGE).durable(true).build();
@@ -106,6 +160,7 @@ public class RabbitMQConfig {
         return BindingBuilder.bind(tripFinishedQueue).to(tripExchange).with(TRIP_FINISHED_ROUTING_KEY);
     }
 
+    //-----Admin-----
     /**
      * Configura el exchange de administración
      *
@@ -185,6 +240,22 @@ public class RabbitMQConfig {
         return BindingBuilder.bind(driverDocumentQueue).to(adminExchange).with(DRIVER_DOCUMENT_ROUTING);
     }
 
+    //Reportes
+    @Bean
+    public TopicExchange reportExchange() {
+        return ExchangeBuilder.topicExchange(REPORT_EXCHANGE).durable(true).build();
+    }
+
+    @Bean
+    public Queue reportCreatedQueue() {
+        return QueueBuilder.durable(REPORT_CREATED_QUEUE).build();
+    }
+
+    @Bean
+    public Binding bindReportCreated(@Qualifier("reportCreatedQueue") Queue q,
+                                     @Qualifier("reportExchange") TopicExchange ex) {
+        return BindingBuilder.bind(q).to(ex).with(REPORT_CREATED_ROUTING_KEY);
+    }
 
 
     /**
@@ -232,5 +303,18 @@ public class RabbitMQConfig {
         f.setConcurrentConsumers(2);
         f.setMaxConcurrentConsumers(10);
         return f;
+    }
+
+
+    /**
+     * Configura el factory para admin
+     * @param cf
+     * @return
+     */
+    @Bean
+    public RabbitAdmin rabbitAdmin(ConnectionFactory cf) {
+        RabbitAdmin admin = new RabbitAdmin(cf);
+        admin.setAutoStartup(true);
+        return admin;
     }
 }

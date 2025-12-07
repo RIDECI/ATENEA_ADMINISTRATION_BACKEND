@@ -3,32 +3,36 @@ package edu.dosw.rideci.infrastructure.persistence.entity;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.index.Indexed;
 import java.time.LocalDateTime;
 
 /**
- * Documento de usuario para persistencia en MongoDB
+ * Documento de perfil para persistencia en MongoDB
  *
  * @author RideECI
  * @version 1.0
  */
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@Document(collection = "users")
-public class UserDocument {
+@Document(collection = "profiles")
+public class ProfileDocument {
 
     @Id
-    private Long id;
+    private String id;
+
+    /**
+     * ID del usuario (índice para búsquedas rápidas)
+     */
+    @Indexed
+    private Long userId;
 
     private String name;
     private String email;
-    private String role;
-    private String state;
-    private double reputation;
-    private LocalDateTime lastLogin;
     private String phoneNumber;
+    private String profileType;
+    private String state;
     private LocalDateTime createdAt;
-    private int suspensionCount;
-    private boolean blocked;
+    private LocalDateTime updatedAt;
 }

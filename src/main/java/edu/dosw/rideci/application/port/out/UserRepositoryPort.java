@@ -69,4 +69,20 @@ public interface UserRepositoryPort {
      * @return Lista de todos los usuarios
      */
     List<User> findAll();
+
+
+    boolean updateReputationSummary(Long userId, double average, long totalRatings);
+
+
+    /**
+     * Incrementa el contador de suspensiones de un usuario y devuelve el nuevo contador.
+     * Debe ser atómico si es posible.
+     */
+    long incrementSuspensionCount(Long userId, Long adminId, String reason);
+
+    /**
+     * Bloquea al usuario de forma atómica (set blocked = true, state = "BLOCKED")
+     * Retorna true si se bloqueó ahora (false si ya estaba bloqueado o no existe).
+     */
+    boolean blockUser(Long userId, Long adminId, String reason);
 }
