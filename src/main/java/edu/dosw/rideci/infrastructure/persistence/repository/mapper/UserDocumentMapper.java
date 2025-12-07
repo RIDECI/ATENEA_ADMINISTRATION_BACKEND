@@ -24,6 +24,7 @@ public interface UserDocumentMapper {
     @Mapping(target="suspensionCount", source="suspensionCount")
     @Mapping(target="blocked", source="blocked")
     @Mapping(target = "status", source = "state")
+    @Mapping(source = "previousRole", target = "previousRole")
     User toDomain(UserDocument d);
 
     /**
@@ -35,6 +36,7 @@ public interface UserDocumentMapper {
     @Mapping(target="suspensionCount", source="suspensionCount")
     @Mapping(target="blocked", source="blocked")
     @Mapping(target = "state", source = "status")
+    @Mapping(source = "previousRole", target = "previousRole")
     UserDocument toDocument(User u);
 
     /**

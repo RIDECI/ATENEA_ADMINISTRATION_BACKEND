@@ -31,4 +31,5 @@ public class UserDocument {
     private LocalDateTime createdAt;
     private int suspensionCount;
     private boolean blocked;
+    private String previousRole;
 }

@@ -1,6 +1,7 @@
 package edu.dosw.rideci.unit.usecases;
 
 import edu.dosw.rideci.application.events.RatingCreatedEvent;
+import edu.dosw.rideci.application.port.in.CreateRatingUseCase;
 import edu.dosw.rideci.application.port.out.ReputationRepositoryPort;
 import edu.dosw.rideci.application.port.out.UserRepositoryPort;
 import edu.dosw.rideci.application.service.ReputationService;
@@ -22,6 +23,9 @@ class ReputationServiceTest {
     private ReputationService service;
 
     @Mock
+    private CreateRatingUseCase createRatingUseCase;
+
+    @Mock
     private ReputationRepositoryPort reputationRepo;
 
     @Mock
@@ -35,7 +39,7 @@ class ReputationServiceTest {
     @Test
     void shouldIgnoreNullEvent() {
         service.handleRatingCreated(null);
-        verifyNoInteractions(reputationRepo, userRepo);
+        verifyNoInteractions(createRatingUseCase, reputationRepo, userRepo);
     }
 
     @Test
@@ -51,9 +55,9 @@ class ReputationServiceTest {
                 .build();
 
         service.handleRatingCreated(ev1);
-        verifyNoInteractions(reputationRepo, userRepo);
+        verifyNoInteractions(createRatingUseCase, reputationRepo, userRepo);
 
-        reset(reputationRepo, userRepo);
+        reset(createRatingUseCase, reputationRepo, userRepo);
 
         RatingCreatedEvent ev2 = RatingCreatedEvent.builder()
                 .ratingId(2L)
@@ -66,7 +70,7 @@ class ReputationServiceTest {
                 .build();
 
         service.handleRatingCreated(ev2);
-        verifyNoInteractions(reputationRepo, userRepo);
+        verifyNoInteractions(createRatingUseCase, reputationRepo, userRepo);
     }
 
     @Test
@@ -87,7 +91,7 @@ class ReputationServiceTest {
         service.handleRatingCreated(ev);
 
         verify(reputationRepo, times(1)).existsById(ratingId);
-        verify(reputationRepo, never()).saveRating(any(Rating.class));
+        verify(createRatingUseCase, never()).createRating(any(Rating.class));
         verifyNoInteractions(userRepo);
     }
 
@@ -109,15 +113,16 @@ class ReputationServiceTest {
         when(reputationRepo.averageForProfile(ratedProfileId)).thenReturn(4.0);
         when(reputationRepo.countForProfile(ratedProfileId)).thenReturn(3L);
         when(userRepo.updateReputationSummary(ratedProfileId, 4.0, 3L)).thenReturn(true);
+        when(createRatingUseCase.createRating(any(Rating.class))).thenAnswer(inv -> inv.getArgument(0));
 
         service.handleRatingCreated(ev);
 
         ArgumentCaptor<Rating> ratingCap = ArgumentCaptor.forClass(Rating.class);
-        verify(reputationRepo, times(1)).saveRating(ratingCap.capture());
+        verify(createRatingUseCase, times(1)).createRating(ratingCap.capture());
         Rating saved = ratingCap.getValue();
         assertEquals(ratingId, saved.getId());
         assertEquals(ratedProfileId, saved.getRatedProfileId());
-        assertEquals(4, saved.getScore()); // Rating.valueobject uses integer score
+        assertEquals(4, saved.getScore());
 
         verify(reputationRepo, times(1)).averageForProfile(ratedProfileId);
         verify(reputationRepo, times(1)).countForProfile(ratedProfileId);
@@ -150,10 +155,11 @@ class ReputationServiceTest {
         u.setReputation(0.0);
         when(userRepo.findById(ratedProfileId)).thenReturn(Optional.of(u));
         when(userRepo.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(createRatingUseCase.createRating(any(Rating.class))).thenAnswer(inv -> inv.getArgument(0));
 
         service.handleRatingCreated(ev);
 
-        verify(reputationRepo).saveRating(any(Rating.class));
+        verify(createRatingUseCase).createRating(any(Rating.class));
         verify(reputationRepo).averageForProfile(ratedProfileId);
         verify(reputationRepo).countForProfile(ratedProfileId);
 
@@ -189,10 +195,11 @@ class ReputationServiceTest {
         u.setReputation(4.0);
         when(userRepo.findById(ratedProfileId)).thenReturn(Optional.of(u));
         when(userRepo.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(createRatingUseCase.createRating(any(Rating.class))).thenAnswer(inv -> inv.getArgument(0));
 
         service.handleRatingCreated(ev);
 
-        verify(reputationRepo).saveRating(any(Rating.class));
+        verify(createRatingUseCase).createRating(any(Rating.class));
         verify(reputationRepo).averageForProfile(ratedProfileId);
         verify(reputationRepo).countForProfile(ratedProfileId);
 
