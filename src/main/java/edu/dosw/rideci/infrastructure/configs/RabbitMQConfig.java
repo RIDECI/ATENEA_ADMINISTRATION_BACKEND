@@ -54,6 +54,7 @@ public class RabbitMQConfig {
     public static final String PROFILE_COMMAND_ACTIVATE = "profile.command.activate";
     public static final String PROFILE_COMMAND_DEACTIVATE = "profile.command.deactivate";
     public static final String PROFILE_COMMAND_QUEUE = "profile.command.queue";
+    public static final String PROFILE_UPDATED_ROUTING_KEY = "profile.updated";
 
     //Reportes
     public static final String REPORT_EXCHANGE = "rideci.report.exchange";
@@ -112,6 +113,12 @@ public class RabbitMQConfig {
     public Binding bindRatingToTravel(@Qualifier("ratingSyncQueue") Queue q,
                                       @Qualifier("tripExchange") TopicExchange tripExchange) {
         return BindingBuilder.bind(q).to(tripExchange).with(RabbitMQConfig.TRIP_FINISHED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding bindProfileUpdated(@Qualifier("profileSyncQueue") Queue q,
+                                      @Qualifier("profileExchange") TopicExchange ex) {
+        return BindingBuilder.bind(q).to(ex).with(PROFILE_UPDATED_ROUTING_KEY);
     }
 
     @Bean

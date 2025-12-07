@@ -1,6 +1,7 @@
 package edu.dosw.rideci.infrastructure.adapters.messaging;
 
 import edu.dosw.rideci.application.port.out.EventPublisher;
+import edu.dosw.rideci.infrastructure.configs.RabbitMQConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,18 +25,18 @@ public class RabbitPublisherAdapter implements EventPublisher {
     @Override
     public void publish(Object event, String routingKey) {
         if (routingKey == null) routingKey = "";
-
         String exchange;
         if (routingKey.startsWith("travel.")) {
-            exchange = "travel.exchange";
+            exchange = RabbitMQConfig.TRIP_EXCHANGE;
         } else if (routingKey.startsWith("profile.")) {
-            exchange = "profile.exchange";
+            exchange = RabbitMQConfig.EXCHANGE_PROFILE;
         } else if (routingKey.startsWith("user.")) {
-            exchange = "user.exchange";
+            exchange = RabbitMQConfig.EXCHANGE_USER;
+        } else if (routingKey.startsWith("admin.")) {
+            exchange = RabbitMQConfig.EXCHANGE;
         } else {
             exchange = defaultExchange;
         }
-
         rabbitTemplate.convertAndSend(exchange, routingKey, event);
     }
 
