@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 
 /**
- * Evento de comando para perfiles en RideECI
+ * Evento de comando para el modulo de perfiles en RideECI
  * Se utiliza para activar o desactivar perfiles de usuario en el sistema
  *
  * @author RideECI

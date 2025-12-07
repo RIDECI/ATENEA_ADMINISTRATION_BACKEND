@@ -2,7 +2,7 @@ package edu.dosw.rideci.application.events.listener;
 
 import edu.dosw.rideci.application.events.RatingCreatedEvent;
 import edu.dosw.rideci.application.service.ReputationService;
-import edu.dosw.rideci.infrastructure.configs.RabbitMQConfig;
+import edu.dosw.rideci.infrastructure.config.RabbitMQConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;

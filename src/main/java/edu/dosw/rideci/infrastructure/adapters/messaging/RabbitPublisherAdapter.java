@@ -1,7 +1,7 @@
 package edu.dosw.rideci.infrastructure.adapters.messaging;
 
 import edu.dosw.rideci.application.port.out.EventPublisher;
-import edu.dosw.rideci.infrastructure.configs.RabbitMQConfig;
+import edu.dosw.rideci.infrastructure.config.RabbitMQConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;

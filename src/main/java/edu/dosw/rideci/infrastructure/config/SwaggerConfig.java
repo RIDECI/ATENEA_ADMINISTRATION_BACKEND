@@ -1,4 +1,4 @@
-package edu.dosw.rideci.infrastructure.configs;
+package edu.dosw.rideci.infrastructure.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

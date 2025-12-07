@@ -6,7 +6,7 @@ import edu.dosw.rideci.application.events.ProfileEvent;
 import edu.dosw.rideci.application.service.ProfileService;
 import edu.dosw.rideci.application.port.out.DriverRepositoryPort;
 import edu.dosw.rideci.domain.model.Driver;
-import edu.dosw.rideci.infrastructure.configs.RabbitMQConfig;
+import edu.dosw.rideci.infrastructure.config.RabbitMQConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;

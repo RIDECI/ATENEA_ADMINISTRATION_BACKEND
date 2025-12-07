@@ -1,6 +1,7 @@
 package edu.dosw.rideci.application.service;
 
 import edu.dosw.rideci.application.events.RatingCreatedEvent;
+import edu.dosw.rideci.application.port.in.CreateRatingUseCase;
 import edu.dosw.rideci.application.port.out.ReputationRepositoryPort;
 import edu.dosw.rideci.application.port.out.UserRepositoryPort;
 import edu.dosw.rideci.domain.model.valueobjects.Rating;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class ReputationService {
 
+    private final CreateRatingUseCase createRatingUseCase;
     private final ReputationRepositoryPort reputationRepo;
     private final UserRepositoryPort userRepo;
 
@@ -56,7 +58,7 @@ public class ReputationService {
             return;
         }
 
-        reputationRepo.saveRating(r);
+        createRatingUseCase.createRating(r);
 
         double avg = reputationRepo.averageForProfile(r.getRatedProfileId());
         long count = reputationRepo.countForProfile(r.getRatedProfileId());

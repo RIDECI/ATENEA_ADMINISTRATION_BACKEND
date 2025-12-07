@@ -5,7 +5,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import edu.dosw.rideci.application.events.TravelCreatedEvent;
 import edu.dosw.rideci.application.events.TravelCompletedEvent;
 import edu.dosw.rideci.application.service.TripEventService;
-import edu.dosw.rideci.infrastructure.configs.RabbitMQConfig;
+import edu.dosw.rideci.infrastructure.config.RabbitMQConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -73,16 +73,16 @@ public class TravelEventListener {
     }
 
     /**
-    @RabbitListener(queues = RabbitMQConfig.TRIP_CREATED_QUEUE, containerFactory = "rabbitListenerContainerFactory")
-    public void handleRawTripCreated(Map<String, Object> payload) {
-        log.info("RAW travel.created payload -> {}", payload);
-        try {
-            TravelCreatedEvent e = mapper.convertValue(payload, TravelCreatedEvent.class);
-            handleTripCreated(e);
-        } catch (Exception ex) {
-            log.error("No se pudo mapear raw payload a TravelCreatedEvent: {}", ex.getMessage(), ex);
-        }
-    }
-    **/
+     @RabbitListener(queues = RabbitMQConfig.TRIP_CREATED_QUEUE, containerFactory = "rabbitListenerContainerFactory")
+     public void handleRawTripCreated(Map<String, Object> payload) {
+     log.info("RAW travel.created payload -> {}", payload);
+     try {
+     TravelCreatedEvent e = mapper.convertValue(payload, TravelCreatedEvent.class);
+     handleTripCreated(e);
+     } catch (Exception ex) {
+     log.error("No se pudo mapear raw payload a TravelCreatedEvent: {}", ex.getMessage(), ex);
+     }
+     }
+     **/
 
 }
