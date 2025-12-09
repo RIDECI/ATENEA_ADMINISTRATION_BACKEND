@@ -16,34 +16,22 @@ import org.mapstruct.Mapping;
 public interface UserDocumentMapper {
 
     /**
-     * Convierte UserDocument a User
-     *
-     * @param d Documento de usuario
-     * @return Modelo de dominio de usuario
+     * UserDocument -> User
      */
-    @Mapping(target="suspensionCount", source="suspensionCount")
-    @Mapping(target="blocked", source="blocked")
-    @Mapping(target = "status", source = "state")
-    @Mapping(source = "previousRole", target = "previousRole")
+    @Mapping(source = "state", target = "status")
+    @Mapping(source = "suspensionCount", target = "suspensionCount")
+    @Mapping(source = "blocked", target = "blocked")
+    @Mapping(source = "phoneNumber", target = "phoneNumber")
     User toDomain(UserDocument d);
 
     /**
-     * Convierte User a UserDocument
-     *
-     * @param u Modelo de dominio de usuario
-     * @return Documento de usuario
+     * User -> UserDocument
      */
-    @Mapping(target="suspensionCount", source="suspensionCount")
-    @Mapping(target="blocked", source="blocked")
-    @Mapping(target = "state", source = "status")
-    @Mapping(source = "previousRole", target = "previousRole")
+    @Mapping(source = "status", target = "state")
+    @Mapping(source = "suspensionCount", target = "suspensionCount")
+    @Mapping(source = "blocked", target = "blocked")
+    @Mapping(source = "phoneNumber", target = "phoneNumber")
     UserDocument toDocument(User u);
 
-    /**
-     * Convierte lista de UserDocument a lista de User
-     *
-     * @param docs Lista de documentos de usuario
-     * @return Lista de modelos de dominio de usuario
-     */
     List<User> toListDomain(List<UserDocument> docs);
 }

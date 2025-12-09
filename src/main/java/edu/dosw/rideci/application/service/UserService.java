@@ -48,12 +48,15 @@ public class UserService implements GetUsersUseCase, GetUserDetailUseCase,
      */
     @Override
     public List<User> listUsers(String search, String status, String role, int page, int size) {
-        if (search != null && !search.isBlank()) return userRepo.searchByName(search);
-        if (status != null && !status.isBlank()) return userRepo.findByStatus(status);
-        if ((search == null || search.isBlank()) && (status == null || status.isBlank()))
+        if (search != null && !search.isBlank()) {
+            return userRepo.searchByName(search);
+        } else if (status != null && !status.isBlank()) {
+            return userRepo.findByStatus(status);
+        } else {
             return userRepo.findAllPaged(page, size);
-        return List.of();
+        }
     }
+
 
     /**
      * Obtiene un usuario por ID
@@ -117,15 +120,13 @@ public class UserService implements GetUsersUseCase, GetUserDetailUseCase,
      */
     private void handleAccountSuspend(Long userId, SuspendUserRequestDto req) {
         User user = loadExistingUser(userId);
-        persistPreviousRoleIfMissing(user);
-        markUserSuspendedLocally(user);
+        user.setStatus("SUSPENDED");
+        userRepo.save(user);
         long nextCount = userRepo.incrementSuspensionCount(userId, req.getAdminId(), req.getReason());
-        User updated = loadExistingUser(userId);
         recordAdminSuspendAction(req, userId, nextCount);
         publishUserSuspendedEvent(req, userId);
         profileClient.deactivateProfilesForUser(userId);
-
-        if (updated.isBlocked()) {
+        if (nextCount >= 3) {
             publishAutoBlockEvents(req.getAdminId(), userId, nextCount);
         }
     }
@@ -173,7 +174,6 @@ public class UserService implements GetUsersUseCase, GetUserDetailUseCase,
      */
     private void handleAccountActivate(Long userId, Long adminId) {
         User u = loadExistingUser(userId);
-        restorePreviousRoleIfAny(u);
 
         if (u.isBlocked()) {
             u.setBlocked(false);
@@ -195,7 +195,6 @@ public class UserService implements GetUsersUseCase, GetUserDetailUseCase,
         eventPublisher.publish(ev, "admin.user.activated");
     }
 
-
     /**
      * Bloquea un usuario en el sistema
      *
@@ -207,7 +206,6 @@ public class UserService implements GetUsersUseCase, GetUserDetailUseCase,
     @Transactional
     public void blockUser(Long userId, Long adminId, String reason) {
         User u = loadExistingUser(userId);
-        persistPreviousRoleIfMissing(u);
         userRepo.save(u);
 
         boolean changed = userRepo.blockUser(userId, adminId, reason);
@@ -240,27 +238,6 @@ public class UserService implements GetUsersUseCase, GetUserDetailUseCase,
                 .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND + userId));
     }
 
-    /**
-     * Preserva el rol anterior del usuario si no está establecido
-     * Utilizado antes de cambios de estado para permitir restauración
-     *
-     * @param user Usuario a procesar
-     */
-    private void persistPreviousRoleIfMissing(User user) {
-        if (user.getPreviousRole() == null || user.getPreviousRole().isBlank()) {
-            user.setPreviousRole(user.getRole());
-        }
-    }
-
-    /**
-     * Marca un usuario como suspendido en el repositorio local
-     *
-     * @param user Usuario a suspender
-     */
-    private void markUserSuspendedLocally(User user) {
-        user.setStatus("SUSPENDED");
-        userRepo.save(user);
-    }
 
     /**
      * Registra la acción de suspensión en el servicio de auditoría
@@ -312,18 +289,4 @@ public class UserService implements GetUsersUseCase, GetUserDetailUseCase,
                 String.valueOf(userId), "suspensions=" + nextCount);
     }
 
-    /**
-     * Restaura el rol anterior del usuario durante la activación
-     * Si no existe rol anterior, establece un rol por defecto
-     *
-     * @param u Usuario a restaurar
-     */
-    private void restorePreviousRoleIfAny(User u) {
-        if (u.getPreviousRole() != null && !u.getPreviousRole().isBlank()) {
-            u.setRole(u.getPreviousRole());
-            u.setPreviousRole(null);
-        } else {
-            u.setRole(u.getRole() == null ? "STUDENT" : u.getRole());
-        }
-    }
 }

@@ -71,7 +71,6 @@ public interface UserRepositoryPort {
     List<User> findAll();
 
 
-    boolean updateReputationSummary(Long userId, double average, long totalRatings);
 
 
     /**

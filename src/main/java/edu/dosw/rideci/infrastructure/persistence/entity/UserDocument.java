@@ -3,7 +3,6 @@ package edu.dosw.rideci.infrastructure.persistence.entity;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import java.time.LocalDateTime;
 
 /**
  * Documento de usuario para persistencia en MongoDB
@@ -25,11 +24,7 @@ public class UserDocument {
     private String email;
     private String role;
     private String state;
-    private double reputation;
-    private LocalDateTime lastLogin;
     private String phoneNumber;
-    private LocalDateTime createdAt;
     private int suspensionCount;
     private boolean blocked;
-    private String previousRole;
 }

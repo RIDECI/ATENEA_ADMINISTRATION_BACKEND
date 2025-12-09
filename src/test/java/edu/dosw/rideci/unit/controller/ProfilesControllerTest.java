@@ -1,14 +1,10 @@
 package edu.dosw.rideci.unit.controller;
 
-import edu.dosw.rideci.application.mapper.RatingMapper;
-import edu.dosw.rideci.application.port.in.GetProfileUseCase;
-import edu.dosw.rideci.application.port.in.GetProfilesUseCase;
-import edu.dosw.rideci.application.port.in.GetRatingsByProfileUseCase;
 import edu.dosw.rideci.application.port.in.ManageProfileUseCase;
+import edu.dosw.rideci.application.port.out.ProfileClientPort;
 import edu.dosw.rideci.domain.model.Profile;
-import edu.dosw.rideci.domain.model.valueobjects.Rating;
 import edu.dosw.rideci.infrastructure.controller.ProfilesController;
-import edu.dosw.rideci.infrastructure.controller.dto.response.RatingResponseDto;
+import edu.dosw.rideci.infrastructure.controller.dto.request.SuspendUserRequestDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
@@ -16,7 +12,6 @@ import org.mockito.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,19 +24,10 @@ class ProfilesControllerTest {
     private ProfilesController controller;
 
     @Mock
-    private GetProfilesUseCase listUseCase;
-
-    @Mock
-    private GetProfileUseCase getUseCase;
-
-    @Mock
     private ManageProfileUseCase manageUseCase;
 
     @Mock
-    private GetRatingsByProfileUseCase getRatingsByProfile;
-
-    @Mock
-    private RatingMapper ratingMapper;
+    private ProfileClientPort profileClient;
 
     @BeforeEach
     void setUp() {
@@ -51,77 +37,68 @@ class ProfilesControllerTest {
     @Test
     void shouldListProfiles() {
         Profile p = Profile.builder().userId(1L).name("A").build();
-        when(listUseCase.listProfiles(null, null, 0, 20)).thenReturn(List.of(p));
+        when(manageUseCase.listProfiles(null, null, 0, 20)).thenReturn(List.of(p));
 
         ResponseEntity<List<Profile>> res = controller.list(null, null, 0, 20);
+
         assertEquals(HttpStatus.OK, res.getStatusCode());
+        assertNotNull(res.getBody());
         assertEquals(1, res.getBody().size());
         assertSame(p, res.getBody().get(0));
+        verify(manageUseCase, times(1)).listProfiles(null, null, 0, 20);
     }
 
     @Test
     void shouldGetByUserIdFound() {
         Profile p = Profile.builder().userId(5L).name("B").build();
-        when(getUseCase.getByUserId(5L)).thenReturn(Optional.of(p));
+        when(manageUseCase.getProfileDetails(5L)).thenReturn(Optional.of(p));
 
-        ResponseEntity<Profile> res = controller.getByUserId(5L);
+        ResponseEntity<Profile> res = controller.get(5L);
+
         assertEquals(HttpStatus.OK, res.getStatusCode());
         assertSame(p, res.getBody());
+        verify(manageUseCase, times(1)).getProfileDetails(5L);
     }
 
     @Test
     void shouldGetByUserIdNotFound() {
-        when(getUseCase.getByUserId(99L)).thenReturn(Optional.empty());
-        ResponseEntity<Profile> res = controller.getByUserId(99L);
+        when(manageUseCase.getProfileDetails(99L)).thenReturn(Optional.empty());
+
+        ResponseEntity<Profile> res = controller.get(99L);
+
         assertEquals(HttpStatus.NOT_FOUND, res.getStatusCode());
+        verify(manageUseCase, times(1)).getProfileDetails(99L);
     }
 
     @Test
-    void shouldActivateProfile() {
-        ResponseEntity<Void> res = controller.activateProfile(10L, 1L, "DRIVER");
+    void shouldActivateProfile_callsClientAndUseCase() {
+        Long userId = 10L;
+        Long adminId = 1L;
+        String profileType = "DRIVER";
+
+        // No stubbing necessary for void methods; just call and verify interactions
+        ResponseEntity<Void> res = controller.activate(userId, adminId, profileType);
+
         assertEquals(HttpStatus.NO_CONTENT, res.getStatusCode());
-        verify(manageUseCase, times(1)).activateProfile(10L, 1L, "DRIVER");
+        verify(profileClient, times(1)).activateProfilesForUserByType(userId, profileType);
+        verify(manageUseCase, times(1)).activateProfile(userId, adminId, profileType);
     }
 
     @Test
-    void shouldDeactivateProfile() {
-        ResponseEntity<Void> res = controller.deactivateProfile(11L, 2L, null);
+    void shouldSuspendProfile_callsClientAndUseCase() {
+        Long userId = 20L;
+        SuspendUserRequestDto dto = new SuspendUserRequestDto();
+        dto.setAdminId(42L);
+        dto.setProfileType("PASSENGER");
+        dto.setReason("misconduct");
+        dto.setStartAt("2025-12-01T00:00:00");
+        dto.setEndAt("2025-12-10T00:00:00");
+
+        ResponseEntity<Void> res = controller.suspend(userId, dto);
+
         assertEquals(HttpStatus.NO_CONTENT, res.getStatusCode());
-        verify(manageUseCase, times(1)).deactivateProfile(11L, 2L, null);
-    }
-
-    @Test
-    void shouldReturnRatingsForProfile() {
-        Long profileId = 55L;
-        Rating r = Rating.builder()
-                .id(123L)
-                .raterProfileId(200L)
-                .ratedProfileId(profileId)
-                .tripId(777L)
-                .score(5)
-                .comment("ok")
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        RatingResponseDto dto = RatingResponseDto.builder()
-                .id("abc")
-                .ratingId(123L)
-                .raterProfileId(200L)
-                .ratedProfileId(profileId)
-                .tripId(777L)
-                .score(5)
-                .comment("ok")
-                .createdAt(r.getCreatedAt())
-                .build();
-
-        when(getRatingsByProfile.getRatingsForProfile(profileId)).thenReturn(List.of(r));
-        when(ratingMapper.toListDto(List.of(r))).thenReturn(List.of(dto));
-
-        ResponseEntity<List<RatingResponseDto>> res = controller.getRatingsForProfile(profileId);
-
-        assertEquals(HttpStatus.OK, res.getStatusCode());
-        assertNotNull(res.getBody());
-        assertEquals(1, res.getBody().size());
-        assertEquals(dto, res.getBody().get(0));
+        verify(profileClient, times(1)).deactivateProfilesForUserByType(userId, dto.getProfileType());
+        verify(manageUseCase, times(1))
+                .suspendProfile(userId, dto.getAdminId(), dto.getProfileType(), dto.getReason(), dto.getStartAt(), dto.getEndAt());
     }
 }

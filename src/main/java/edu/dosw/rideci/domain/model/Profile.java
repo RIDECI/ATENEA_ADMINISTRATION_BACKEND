@@ -1,6 +1,13 @@
 package edu.dosw.rideci.domain.model;
 
+import edu.dosw.rideci.domain.model.enums.IdentificationType;
+import edu.dosw.rideci.domain.model.valueobjects.Badge;
+import edu.dosw.rideci.domain.model.valueobjects.Reputation;
+import edu.dosw.rideci.domain.model.valueobjects.Vehicle;
 import lombok.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Modelo de dominio para perfiles de usuario en RideECI
@@ -20,4 +27,13 @@ public class Profile {
     private String phoneNumber;
     private String profileType;
     private String state;
+    private List<Vehicle> vehicles;
+    private Reputation calification;
+    private List<Badge> badges;
+    private String identificationNumber;
+    private String address;
+    private LocalDateTime birthDate;
+    private String profilePictureUrl;
+    private IdentificationType identificationType;
+    private LocalDateTime updatedAt;
 }

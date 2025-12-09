@@ -1,7 +1,6 @@
 package edu.dosw.rideci.domain.model;
 
 import lombok.*;
-import java.time.LocalDateTime;
 
 
 /**
@@ -20,11 +19,7 @@ public class User {
     private String email;
     private String role;
     private String status;
-    private double reputation;
     private int suspensionCount;
     private boolean blocked;
-    private LocalDateTime lastLogin;
     private String phoneNumber;
-    private LocalDateTime createdAt;
-    private String previousRole;
 }

@@ -15,9 +15,10 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 
 /**
- * Listener único y robusto para eventos de usuario.
- * - Recibe payload crudo como Map (permite aceptar campos "id" o "userId" en varias formas)
- * - Intenta normalizar userId y luego delega al mapper + CreateUserUseCase (upsert)
+ * Listener para eventos de usuario.
+ *
+ * @author RideECI
+ * @version 1.0
  */
 @Component
 @RequiredArgsConstructor
@@ -39,22 +40,9 @@ public class UserEventListener {
 
         try {
             UserEvent ev = objectMapper.convertValue(payload, UserEvent.class);
-            if (ev.getUserId() == null) {
-                Object maybeUserId = payload.get("userId");
-                if (maybeUserId == null) {
-                    maybeUserId = payload.get("id");
-                }
-                if (maybeUserId != null) {
-                    Long parsed = tryParseLong(maybeUserId);
-                    if (parsed != null) {
-                        ev.setUserId(parsed);
-                    } else {
-                        log.warn("[UserEventListener] couldn't parse user id from payload field (value={}) — ignoring userId", maybeUserId);
-                    }
-                }
-            }
+            if (ev == null) ev = new UserEvent();
 
-            if (ev == null || ev.getUserId() == null) {
+            if (!normalizeUserId(ev, payload)) {
                 log.warn("[UserEventListener] missing userId after parsing, ignoring payload -> {}", payload);
                 return;
             }
@@ -68,6 +56,41 @@ public class UserEventListener {
         }
     }
 
+    /**
+     * Intenta normalizar
+     * Retorna true si al final se pudo obtener un userId (no null).
+     */
+    private boolean normalizeUserId(UserEvent ev, Map<String, Object> payload) {
+        if (ev == null) return false;
+
+        if (ev.getUserId() != null) return true;
+        if (ev.getId() != null) {
+            Long parsed = tryParseLong(ev.getId());
+            if (parsed != null) {
+                ev.setUserId(parsed);
+                return true;
+            }
+        }
+
+        Object maybeUserId = payload.get("userId");
+        if (maybeUserId == null) maybeUserId = payload.get("id");
+        if (maybeUserId != null) {
+            Long parsed = tryParseLong(maybeUserId);
+            if (parsed != null) {
+                ev.setUserId(parsed);
+                return true;
+            } else {
+                log.warn("[UserEventListener] couldn't parse user id from payload field (value={}) — ignoring userId", maybeUserId);
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Intenta convertir un valor Number o String a Long.
+     * Retorna null si no es convertible.
+     */
     private Long tryParseLong(Object val) {
         if (val == null) return null;
         try {
@@ -83,4 +106,3 @@ public class UserEventListener {
         }
     }
 }
-

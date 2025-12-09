@@ -33,7 +33,6 @@ public class UserSyncService implements CreateUserUseCase {
     @Override
     public User createUser(User user) {
         if (user == null) throw new IllegalArgumentException("user required");
-        if (user.getCreatedAt() == null) user.setCreatedAt(LocalDateTime.now());
         return userRepo.save(user);
     }
 }
