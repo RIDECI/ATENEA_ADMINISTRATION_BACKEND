@@ -109,17 +109,6 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
 
 
     @Override
-    public boolean updateReputationSummary(Long userId, double average, long totalRatings) {
-        if (userId == null) return false;
-        var maybeDoc = repo.findById(userId);
-        if (maybeDoc.isEmpty()) return false;
-        var doc = maybeDoc.get();
-        doc.setReputation(average);
-        repo.save(doc);
-        return true;
-    }
-
-    @Override
     public long incrementSuspensionCount(Long userId, Long adminId, String reason) {
         var docOpt = repo.findById(userId);
         if (docOpt.isEmpty()) throw new NoSuchElementException("User not found");

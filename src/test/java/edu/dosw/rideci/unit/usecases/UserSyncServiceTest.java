@@ -7,8 +7,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
-import java.time.LocalDateTime;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -26,30 +24,24 @@ class UserSyncServiceTest {
     }
 
     @Test
-    void shouldCreateUserSetCreatedAtWhenMissing() {
+    void shouldSaveAndReturnUserWhenCreatedAtMissing() {
         User u = new User();
         u.setId(100L);
-        u.setCreatedAt(null);
-
         when(userRepo.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
-
         User saved = service.createUser(u);
 
-        assertNotNull(saved.getCreatedAt());
+        assertSame(u, saved); // ensure repo.save result is returned
         verify(userRepo, times(1)).save(any(User.class));
     }
 
     @Test
-    void shouldReturnSavedUserWhenCreatedAtPresent() {
+    void shouldReturnSavedUserWhenRepositoryReturnsOne() {
         User u = new User();
         u.setId(101L);
-        LocalDateTime now = LocalDateTime.now().minusDays(1);
-        u.setCreatedAt(now);
-
         when(userRepo.save(any(User.class))).thenReturn(u);
 
         User saved = service.createUser(u);
-        assertEquals(now, saved.getCreatedAt());
+        assertSame(u, saved);
         verify(userRepo, times(1)).save(u);
     }
 

@@ -3,7 +3,6 @@ package edu.dosw.rideci.infrastructure.controller.dto.response;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.time.LocalDateTime;
 
 /**
  * DTO para respuesta de usuario en RideECI
@@ -20,6 +19,7 @@ public class UserDto {
     private String email;
     private String role;
     private String status;
-    private double reputation;
-    private LocalDateTime lastLogin;
+    private int suspensionCount;
+    private boolean blocked;
+    private String phoneNumber;
 }

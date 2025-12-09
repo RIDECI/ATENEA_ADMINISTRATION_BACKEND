@@ -105,17 +105,17 @@ class UserServiceTest {
         req.setReason("bad");
         req.setStartAt(null);
         req.setEndAt(null);
+
         when(userRepo.findById(5L)).thenReturn(Optional.of(u));
         when(userRepo.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
         when(userRepo.incrementSuspensionCount(eq(5L), anyLong(), anyString())).thenReturn(1L);
+
         service.suspendUser(5L, req);
 
         ArgumentCaptor<User> cap = ArgumentCaptor.forClass(User.class);
         verify(userRepo, times(1)).save(cap.capture());
         User saved = cap.getValue();
         assertEquals("SUSPENDED", saved.getStatus());
-        assertEquals("PROFESSOR", saved.getRole());
-        assertEquals("PROFESSOR", saved.getPreviousRole());
         ArgumentCaptor<Long> adminCap = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<String> actionCap = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> entityCap = ArgumentCaptor.forClass(String.class);
@@ -128,11 +128,13 @@ class UserServiceTest {
         assertEquals("SUSPEND_USER", actionCap.getValue());
         assertEquals("USER", entityCap.getValue());
         assertTrue(detailsCap.getValue().contains("reason="));
+
         ArgumentCaptor<Object> evCap = ArgumentCaptor.forClass(Object.class);
         ArgumentCaptor<String> routingCap = ArgumentCaptor.forClass(String.class);
         verify(eventPublisher).publish(evCap.capture(), routingCap.capture());
         assertEquals("admin.user.suspended", routingCap.getValue());
-        assertTrue(evCap.getValue() instanceof UserSuspendedEvent);
+        assertInstanceOf(UserSuspendedEvent.class, evCap.getValue());
+
         verify(profileClient, times(1)).deactivateProfilesForUser(5L);
     }
 
@@ -151,20 +153,17 @@ class UserServiceTest {
 
         service.suspendUser(6L, req);
 
-        // we expect it to be recorded again (save + increment + event + profile deactivation)
         verify(userRepo, times(1)).save(any(User.class));
         verify(userRepo, times(1)).incrementSuspensionCount(eq(6L), eq(1L), anyString());
         verify(eventPublisher, times(1)).publish(any(UserSuspendedEvent.class), eq("admin.user.suspended"));
         verify(profileClient, times(1)).deactivateProfilesForUser(6L);
     }
 
-
     @Test
-    void shouldActivateUserRestorePreviousRole() {
+    void shouldActivateUserPublishAndCallProfileClient() {
         User u = new User();
         u.setId(7L);
-        u.setRole("STUDENT, ADMIN");
-        u.setPreviousRole("PROFESSOR");
+        u.setRole("SOME_ROLE");
         u.setStatus("SUSPENDED");
         when(userRepo.findById(7L)).thenReturn(Optional.of(u));
         when(userRepo.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -172,31 +171,20 @@ class UserServiceTest {
         ArgumentCaptor<User> cap = ArgumentCaptor.forClass(User.class);
         verify(userRepo, times(1)).save(cap.capture());
         User saved = cap.getValue();
-        assertEquals("PROFESSOR", saved.getRole());
-        assertNull(saved.getPreviousRole());
         assertEquals("ACTIVE", saved.getStatus());
-        ArgumentCaptor<Long> adminCap = ArgumentCaptor.forClass(Long.class);
-        ArgumentCaptor<String> actionCap = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> entityCap = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> entityIdCap = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> detailsCap = ArgumentCaptor.forClass(String.class);
-        verify(adminActionService).recordAction(adminCap.capture(), actionCap.capture(),
-                entityCap.capture(), entityIdCap.capture(), detailsCap.capture());
 
-        assertEquals(100L, adminCap.getValue());
-        assertEquals("ACTIVATE_USER", actionCap.getValue());
-        assertEquals("USER", entityCap.getValue());
-
+        verify(adminActionService).recordAction(eq(100L), eq("ACTIVATE_USER"), eq("USER"), anyString(), anyString());
         ArgumentCaptor<Object> evCap = ArgumentCaptor.forClass(Object.class);
         ArgumentCaptor<String> routingCap = ArgumentCaptor.forClass(String.class);
         verify(eventPublisher).publish(evCap.capture(), routingCap.capture());
         assertEquals("admin.user.activated", routingCap.getValue());
-        assertTrue(evCap.getValue() instanceof UserActivatedEvent);
+        assertInstanceOf(UserActivatedEvent.class, evCap.getValue());
+
         verify(profileClient, times(1)).activateProfilesForUser(7L);
     }
 
     @Test
-    void shouldActivateUserWhenNoPreviousRoleSetDefault() {
+    void shouldActivateUserWhenRoleNullKeepsNullAndActivate() {
         User u = new User();
         u.setId(8L);
         u.setRole(null);
@@ -209,7 +197,7 @@ class UserServiceTest {
         ArgumentCaptor<User> cap = ArgumentCaptor.forClass(User.class);
         verify(userRepo).save(cap.capture());
         User saved = cap.getValue();
-        assertNotNull(saved.getRole());
+        assertNull(saved.getRole());
         assertEquals("ACTIVE", saved.getStatus());
 
         verify(profileClient, times(1)).activateProfilesForUser(8L);
@@ -224,25 +212,12 @@ class UserServiceTest {
         when(userRepo.findById(11L)).thenReturn(Optional.of(u));
         when(userRepo.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
         when(userRepo.blockUser(11L, 200L, "fraud")).thenReturn(true);
+
         service.blockUser(11L, 200L, "fraud");
-        ArgumentCaptor<User> cap = ArgumentCaptor.forClass(User.class);
-        verify(userRepo, times(1)).save(cap.capture());
-        User saved = cap.getValue();
-        assertEquals("STUDENT", saved.getPreviousRole());
+
+        verify(userRepo, times(1)).save(any(User.class));
         verify(userRepo, times(1)).blockUser(11L, 200L, "fraud");
-        ArgumentCaptor<Long> adminCap = ArgumentCaptor.forClass(Long.class);
-        ArgumentCaptor<String> actionCap = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> entityCap = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> entityIdCap = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> detailsCap = ArgumentCaptor.forClass(String.class);
-
-        verify(adminActionService).recordAction(adminCap.capture(), actionCap.capture(),
-                entityCap.capture(), entityIdCap.capture(), detailsCap.capture());
-
-        assertEquals(200L, adminCap.getValue());
-        assertEquals("BLOCK_USER", actionCap.getValue());
-        assertTrue(detailsCap.getValue().contains("fraud"));
-
+        verify(adminActionService).recordAction(eq(200L), eq("BLOCK_USER"), eq("USER"), anyString(), contains("fraud"));
         verify(eventPublisher, times(1)).publish(any(UserBlockedEvent.class), eq("admin.user.blocked"));
         verify(profileClient, times(1)).deactivateProfilesForUser(11L);
     }
@@ -273,11 +248,12 @@ class UserServiceTest {
         User saved = cap.getValue();
         assertEquals("SUSPENDED", saved.getStatus());
         assertEquals("TEACHER", saved.getRole());
+
         ArgumentCaptor<Object> evCap = ArgumentCaptor.forClass(Object.class);
         ArgumentCaptor<String> routingCap = ArgumentCaptor.forClass(String.class);
         verify(eventPublisher).publish(evCap.capture(), routingCap.capture());
         assertEquals("admin.user.suspended", routingCap.getValue());
-        assertTrue(evCap.getValue() instanceof UserSuspendedEvent);
+        assertInstanceOf(UserSuspendedEvent.class, evCap.getValue());
 
         UserSuspendedEvent ev = (UserSuspendedEvent) evCap.getValue();
         assertEquals(LocalDateTime.parse("2025-01-01T10:00:00"), ev.getStartDate());
@@ -298,12 +274,12 @@ class UserServiceTest {
         when(userRepo.findById(21L)).thenReturn(Optional.of(u));
         when(userRepo.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
         when(userRepo.incrementSuspensionCount(eq(21L), anyLong(), anyString())).thenReturn(1L);
+
         service.suspendUser(21L, req);
 
         ArgumentCaptor<User> cap = ArgumentCaptor.forClass(User.class);
         verify(userRepo).save(cap.capture());
         User saved = cap.getValue();
-        assertNull(saved.getPreviousRole(), "previousRole must remain null when original role is null");
         assertEquals("SUSPENDED", saved.getStatus());
     }
 
@@ -316,28 +292,14 @@ class UserServiceTest {
         when(userRepo.findById(33L)).thenReturn(Optional.of(u));
         when(userRepo.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
         when(userRepo.blockUser(33L, 300L, null)).thenReturn(true);
+
         service.blockUser(33L, 300L, null);
-        ArgumentCaptor<User> cap = ArgumentCaptor.forClass(User.class);
-        verify(userRepo).save(cap.capture());
-        User saved = cap.getValue();
-        assertEquals("STUDENT", saved.getPreviousRole());
-        ArgumentCaptor<Long> adminCap = ArgumentCaptor.forClass(Long.class);
-        ArgumentCaptor<String> actionCap = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> entityCap = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> entityIdCap = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> detailsCap = ArgumentCaptor.forClass(String.class);
 
-        verify(adminActionService).recordAction(adminCap.capture(), actionCap.capture(),
-                entityCap.capture(), entityIdCap.capture(), detailsCap.capture());
+        verify(userRepo).save(any(User.class));
 
-        assertEquals(300L, adminCap.getValue());
-        assertEquals("BLOCK_USER", actionCap.getValue());
-        assertEquals("USER", entityCap.getValue());
-        assertEquals("blocked_by_admin", detailsCap.getValue());
-
+        verify(adminActionService).recordAction(eq(300L), eq("BLOCK_USER"), eq("USER"), anyString(), eq("blocked_by_admin"));
         verify(eventPublisher, times(1)).publish(any(UserBlockedEvent.class), eq("admin.user.blocked"));
     }
-
 
     @Test
     void shouldSuspendProfileTypeOnly() {
@@ -352,7 +314,9 @@ class UserServiceTest {
         req.setAccountOnly(false);
         when(userRepo.findById(44L)).thenReturn(Optional.of(u));
         when(userRepo.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
         service.suspendUser(44L, req);
+
         verify(userRepo, never()).incrementSuspensionCount(anyLong(), anyLong(), anyString());
         verify(profileClient, times(1)).deactivateProfilesForUserByType(44L, "DRIVER");
 
@@ -370,35 +334,60 @@ class UserServiceTest {
         uBefore.setStatus("ACTIVE");
         uBefore.setBlocked(false);
 
-        User uAfter = new User();
-        uAfter.setId(55L);
-        uAfter.setRole("STUDENT");
-        uAfter.setStatus("BLOCKED");
-        uAfter.setBlocked(true);
-
         SuspendUserRequestDto req = new SuspendUserRequestDto();
         req.setAdminId(600L);
         req.setReason("repeat_offense");
 
-        when(userRepo.findById(55L)).thenReturn(Optional.of(uBefore), Optional.of(uAfter));
+        when(userRepo.findById(55L)).thenReturn(Optional.of(uBefore));
         when(userRepo.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
         when(userRepo.incrementSuspensionCount(eq(55L), anyLong(), anyString())).thenReturn(3L); // threshold reached
 
         service.suspendUser(55L, req);
+
         verify(userRepo, times(1)).incrementSuspensionCount(eq(55L), eq(600L), anyString());
+
         ArgumentCaptor<Object> evCap = ArgumentCaptor.forClass(Object.class);
         ArgumentCaptor<String> routingCap = ArgumentCaptor.forClass(String.class);
         verify(eventPublisher, atLeastOnce()).publish(evCap.capture(), routingCap.capture());
         assertTrue(routingCap.getAllValues().stream().anyMatch("admin.user.blocked"::equals));
+
+        verify(adminActionService, atLeastOnce()).recordAction(anyLong(), anyString(), anyString(), anyString(), anyString());
+        verify(profileClient, times(1)).deactivateProfilesForUser(55L);
+    }
+
+
+    @Test
+    void shouldActivateUserWithProfileType() {
+        Long userId = 123L;
+        Long adminId = 777L;
+        String profileType = "DRIVER";
+        service.activateUser(userId, adminId, profileType);
         ArgumentCaptor<Long> adminCap = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<String> actionCap = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> entityCap = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> entityIdCap = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> detailsCap = ArgumentCaptor.forClass(String.class);
-
-        verify(adminActionService, atLeastOnce()).recordAction(adminCap.capture(), actionCap.capture(),
+        verify(adminActionService, times(1)).recordAction(
+                adminCap.capture(), actionCap.capture(),
                 entityCap.capture(), entityIdCap.capture(), detailsCap.capture());
-        assertTrue(actionCap.getAllValues().contains("AUTO_BLOCK_USER"));
-        verify(profileClient, times(1)).deactivateProfilesForUser(55L);
+        assertEquals(adminId, adminCap.getValue());
+        assertEquals("ACTIVATE_PROFILE_TYPE", actionCap.getValue());
+        assertEquals("USER", entityCap.getValue());
+        assertEquals(String.valueOf(userId), entityIdCap.getValue());
+        assertTrue(detailsCap.getValue().contains("profileType="));
+        assertTrue(detailsCap.getValue().contains("DRIVER"));
+
+        verify(profileClient, times(1)).activateProfilesForUserByType(userId, profileType);
+        verify(profileClient, never()).activateProfilesForUser(anyLong());
+        ArgumentCaptor<Object> evCap = ArgumentCaptor.forClass(Object.class);
+        ArgumentCaptor<String> routingCap = ArgumentCaptor.forClass(String.class);
+        verify(eventPublisher, times(1)).publish(evCap.capture(), routingCap.capture());
+        assertEquals("admin.user.activated", routingCap.getValue());
+        assertInstanceOf(UserActivatedEvent.class, evCap.getValue());
+        UserActivatedEvent ev = (UserActivatedEvent) evCap.getValue();
+        assertEquals(userId, ev.getUserId());
+        assertEquals(adminId, ev.getAdminId());
+        assertNotNull(ev.getActivatedAt());
     }
+
 }

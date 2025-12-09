@@ -1,12 +1,14 @@
 package edu.dosw.rideci.infrastructure.adapters.messaging;
 
-import edu.dosw.rideci.application.events.ProfileCommandEvent;
+import edu.dosw.rideci.application.events.ProfileActivatedEvent;
+import edu.dosw.rideci.application.events.ProfileSuspendedEvent;
 import edu.dosw.rideci.application.port.out.ProfileClientPort;
-import edu.dosw.rideci.application.port.out.EventPublisher;
+import edu.dosw.rideci.application.port.out.ProfileCommandPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * Adaptador de mensajería para comandos de perfil en RideECI
@@ -19,7 +21,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class ProfileEventPublisherAdapter implements ProfileClientPort {
 
-    private final EventPublisher eventPublisher;
+    private final ProfileCommandPort publisher;
 
     /**
      * Publica evento para desactivar perfiles de un usuario
@@ -28,12 +30,17 @@ public class ProfileEventPublisherAdapter implements ProfileClientPort {
      */
     @Override
     public void deactivateProfilesForUser(Long userId) {
-        ProfileCommandEvent ev = ProfileCommandEvent.builder()
+
+        ProfileSuspendedEvent ev = ProfileSuspendedEvent.builder()
+                .suspensionId(UUID.randomUUID().toString())
                 .userId(userId)
-                .command("DEACTIVATE")
-                .occurredAt(LocalDateTime.now())
+                .adminId(null)
+                .profileType(null)
+                .reason("deactivated_by_admin")
+                .startAt(LocalDateTime.now())
+                .endAt(null)
                 .build();
-        eventPublisher.publish(ev, "profile.command.deactivate");
+        publisher.publishProfileSuspended(ev, "profile.suspended");
     }
 
     /**
@@ -43,36 +50,37 @@ public class ProfileEventPublisherAdapter implements ProfileClientPort {
      */
     @Override
     public void activateProfilesForUser(Long userId) {
-        ProfileCommandEvent ev = ProfileCommandEvent.builder()
+        ProfileActivatedEvent ev = ProfileActivatedEvent.builder()
                 .userId(userId)
-                .command("ACTIVATE")
-                .occurredAt(LocalDateTime.now())
+                .adminId(null)
+                .profileType(null)
+                .activatedAt(LocalDateTime.now())
                 .build();
-        eventPublisher.publish(ev, "profile.command.activate");
+        publisher.publishProfileActivated(ev, "profile.activated");
     }
 
     @Override
     public void deactivateProfilesForUserByType(Long userId, String profileType) {
-        ProfileCommandEvent ev = ProfileCommandEvent.builder()
+        ProfileSuspendedEvent ev = ProfileSuspendedEvent.builder()
+                .suspensionId(UUID.randomUUID().toString())
                 .userId(userId)
-                .command("DEACTIVATE")
-                .scope("PROFILE_TYPE")
+                .adminId(null)
                 .profileType(profileType)
                 .reason("suspended_profile_type_by_admin")
-                .occurredAt(LocalDateTime.now())
+                .startAt(LocalDateTime.now())
+                .endAt(null)
                 .build();
-        eventPublisher.publish(ev, "profile.command.deactivate");
+        publisher.publishProfileSuspended(ev, "profile.suspended");
     }
 
     @Override
     public void activateProfilesForUserByType(Long userId, String profileType) {
-        ProfileCommandEvent ev = ProfileCommandEvent.builder()
+        ProfileActivatedEvent ev = ProfileActivatedEvent.builder()
                 .userId(userId)
-                .command("ACTIVATE")
-                .scope("PROFILE_TYPE")
+                .adminId(null)
                 .profileType(profileType)
-                .occurredAt(LocalDateTime.now())
+                .activatedAt(LocalDateTime.now())
                 .build();
-        eventPublisher.publish(ev, "profile.command.activate");
+        publisher.publishProfileActivated(ev, "profile.activated");
     }
 }

@@ -13,9 +13,7 @@ import org.mapstruct.ReportingPolicy;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface UserEventMapper {
 
-    @Mapping(target = "id", source = "userId")
-    @Mapping(target = "status", source = "state")
-    @Mapping(target = "phoneNumber", source = "phoneNumber")
-    @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now())")
+    @Mapping(source = "userId", target = "id")
+    @Mapping(source = "state", target = "status")
     User toDomain(UserEvent ev);
 }
