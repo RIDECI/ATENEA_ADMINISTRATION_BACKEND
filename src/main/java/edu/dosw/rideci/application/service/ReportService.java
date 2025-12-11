@@ -32,7 +32,7 @@ public class ReportService implements ReportUseCase {
 
     private final SecurityReportRepositoryPort reportRepo;
     private static final List<String> HEADERS = List.of(
-            "id", "title", "type", "createdBy", "occurredAt", "createdAt", "status", "description"
+            "id", "title", "type", "createdBy", "occurredAt", "createdAt", "status", "description", "relatedId", "severity"
     );
 
     /**
@@ -107,7 +107,9 @@ public class ReportService implements ReportUseCase {
             sb.append(safe(r.getOccurredAt())).append(",");
             sb.append(safe(r.getCreatedAt())).append(",");
             sb.append(safe(r.getStatus())).append(",");
-            sb.append(escapeCsv(r.getDescription())).append("\n");
+            sb.append(escapeCsv(r.getDescription())).append(",");
+            sb.append(safe(r.getRelatedId())).append(",");
+            sb.append(safe(r.getSeverity())).append("\n");
         }
         return sb.toString();
     }
@@ -217,6 +219,8 @@ public class ReportService implements ReportUseCase {
             row.createCell(5).setCellValue(safe(r.getCreatedAt()));
             row.createCell(6).setCellValue(safe(r.getStatus()));
             row.createCell(7).setCellValue(safe(r.getDescription()));
+            row.createCell(8).setCellValue(safe(r.getRelatedId()));
+            row.createCell(9).setCellValue(safe(r.getSeverity()));
         }
     }
 
@@ -303,6 +307,8 @@ public class ReportService implements ReportUseCase {
             table.addCell(safe(r.getCreatedAt()));
             table.addCell(safe(r.getStatus()));
             table.addCell(safe(r.getDescription()));
+            table.addCell(safe(r.getRelatedId()));
+            table.addCell(safe(r.getSeverity()));
         }
 
         document.add(table);

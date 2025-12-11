@@ -210,4 +210,16 @@ class ProfileServiceTest {
         verify(eventPublisher).publish(any(UserSuspendedEvent.class), eq("admin.user.suspended"));
     }
 
+
+    @Test
+    void shouldGetProfileDetailsDelegatesToGetByUserId() {
+        Profile p = Profile.builder().userId(99L).name("Detalle").build();
+        when(profileRepo.findByUserId(99L)).thenReturn(Optional.of(p));
+        var res = service.getProfileDetails(99L);
+
+        assertTrue(res.isPresent());
+        assertEquals(99L, res.get().getUserId());
+        verify(profileRepo, times(1)).findByUserId(99L);
+    }
+
 }

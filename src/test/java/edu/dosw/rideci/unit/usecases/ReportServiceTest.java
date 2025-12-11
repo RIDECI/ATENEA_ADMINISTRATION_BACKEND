@@ -88,7 +88,7 @@ class ReportServiceTest {
 
         String csv = service.exportReportsToCsv(List.of(r));
 
-        assertTrue(csv.startsWith("id,title,type,createdBy,occurredAt,createdAt,status,description"));
+        assertTrue(csv.startsWith("id,title,type,createdBy,occurredAt,createdAt,status,description,relatedId,severity"));
         assertTrue(csv.contains("\"My \"\"Title\"\", extra\""));
         assertTrue(csv.contains("\"desc, with comma\""));
     }
