@@ -3,8 +3,10 @@ package edu.dosw.rideci.application.events;
 import edu.dosw.rideci.domain.model.enums.ReportStatus;
 import edu.dosw.rideci.domain.model.enums.ReportType;
 import edu.dosw.rideci.domain.model.valueobjects.Location;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -17,6 +19,8 @@ import java.time.LocalDateTime;
  * @version 1.0
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class ReportCreatedEvent {
     private String reportId;
