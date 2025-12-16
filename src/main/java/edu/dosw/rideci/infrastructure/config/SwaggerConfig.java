@@ -9,6 +9,7 @@ import io.swagger.v3.oas.models.info.Info;
 /**
  * Configuración de Swagger/OpenAPI para documentación de la API de RideECI
  * Provee la configuración para la documentación automática de los endpoints
+ * Que falla
  *
  * @author RideECI
  * @version 1.0
