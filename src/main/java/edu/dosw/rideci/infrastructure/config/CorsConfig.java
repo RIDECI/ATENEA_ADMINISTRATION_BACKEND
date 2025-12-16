@@ -6,7 +6,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Configuración de CORS para RideECI
+ * Configuración de CORS para RideECI ok
  *
  * @author RideECI
  * @version 1.0
